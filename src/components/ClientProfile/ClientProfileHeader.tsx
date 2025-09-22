@@ -1,0 +1,72 @@
+import { memo } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft } from "lucide-react";
+import { Client } from "@/types";
+
+interface ClientProfileHeaderProps {
+  client: Client;
+  needsMedicalCertificate: boolean;
+}
+
+export const ClientProfileHeader = memo(({ 
+  client, 
+  needsMedicalCertificate 
+}: ClientProfileHeaderProps) => {
+  const navigate = useNavigate();
+
+  return (
+    <>
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Dossiê do Aluno</h1>
+          <p className="text-muted-foreground">Informações completas de {client.nome}</p>
+        </div>
+      </div>
+
+      {/* Client Info Card */}
+      <Card className="shadow-card">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={client.foto} alt={client.nome} />
+              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                {client.nome.split(' ').map(n => n[0]).join('').slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold">{client.nome}</h2>
+              <div className="flex gap-2 mt-2">
+                <Badge 
+                  variant={client.status === "Ativo" ? "default" : "secondary"}
+                  className={client.status === "Ativo" ? "bg-success text-success-foreground" : ""}
+                >
+                  {client.status}
+                </Badge>
+                {needsMedicalCertificate && (
+                  <Badge variant="outline" className="text-warning border-warning">
+                    Atestado Pendente
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
+});
+
+ClientProfileHeader.displayName = "ClientProfileHeader";
