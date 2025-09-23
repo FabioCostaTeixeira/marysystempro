@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SupabaseProvider } from "@/contexts/SupabaseContext";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { Dashboard } from "@/components/Dashboard";
@@ -37,26 +38,28 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Router>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/client/:id" element={<ClientProfile />} />
-            <Route path="*" element={
-              <div className="min-h-screen bg-background">
-                <Header title="PersonalSystem Pro" />
-                <div className="flex">
-                  <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-                  <main className="flex-1 p-6">
-                    {renderContent()}
-                  </main>
+      <SupabaseProvider>
+        <TooltipProvider>
+          <Router>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/client/:id" element={<ClientProfile />} />
+              <Route path="*" element={
+                <div className="min-h-screen bg-background">
+                  <Header title="PersonalSystem Pro" />
+                  <div className="flex">
+                    <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+                    <main className="flex-1 p-6">
+                      {renderContent()}
+                    </main>
+                  </div>
                 </div>
-              </div>
-            } />
-          </Routes>
-        </Router>
-      </TooltipProvider>
+              } />
+            </Routes>
+          </Router>
+        </TooltipProvider>
+      </SupabaseProvider>
     </QueryClientProvider>
   );
 };

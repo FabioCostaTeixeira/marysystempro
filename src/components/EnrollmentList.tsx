@@ -16,11 +16,11 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { useState } from "react";
-import { useRealSupabaseData } from "@/hooks/useRealSupabaseData";
+import { useSupabaseData } from "@/contexts/SupabaseContext";
 import { Enrollment } from "@/types";
 
 export const EnrollmentList = () => {
-  const { enrollments, clients, getClientById, updateEnrollment, deleteEnrollment, loading } = useRealSupabaseData();
+  const { enrollments, clients, getClientById, updateEnrollment, deleteEnrollment, loading } = useSupabaseData();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedEnrollment, setSelectedEnrollment] = useState<Enrollment | null>(null);

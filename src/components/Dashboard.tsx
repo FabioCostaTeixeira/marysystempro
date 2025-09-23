@@ -14,11 +14,11 @@ import {
   Target,
   FileText
 } from "lucide-react";
-import { useRealSupabaseData } from "@/hooks/useRealSupabaseData";
+import { useSupabaseData } from "@/contexts/SupabaseContext";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const { getDashboardMetrics, payments, clients, getClientById, enrollments, loading } = useRealSupabaseData();
+  const { getDashboardMetrics, payments, clients, getClientById, enrollments, loading } = useSupabaseData();
   const metrics = getDashboardMetrics();
   
   // Loading state

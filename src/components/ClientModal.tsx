@@ -12,7 +12,7 @@ import { Edit, Trash2, Save, X, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUploader } from "@/components/ImageUploader";
 import { EnrollmentForm } from "@/components/EnrollmentForm";
-import { useRealSupabaseData } from "@/hooks/useRealSupabaseData";
+import { useSupabaseData } from "@/contexts/SupabaseContext";
 
 interface Client {
   id: number;
@@ -40,7 +40,7 @@ export const ClientModal = ({ client, isOpen, onClose, onUpdate, onDelete }: Cli
   const [editedClient, setEditedClient] = useState<Client | null>(null);
   const [showEnrollmentForm, setShowEnrollmentForm] = useState(false);
   const { toast } = useToast();
-  const { addEnrollment } = useRealSupabaseData();
+  const { addEnrollment } = useSupabaseData();
 
   const handleEdit = () => {
     setEditedClient({ ...client! });

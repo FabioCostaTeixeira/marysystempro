@@ -1,14 +1,56 @@
-import { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Client, Enrollment, MonthlyPayment, DashboardMetrics, Notification } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
-export const useRealSupabaseData = () => {
+interface SupabaseContextType {
+  clients: Client[];
+  enrollments: Enrollment[];
+  payments: MonthlyPayment[];
+  notifications: Notification[];
+  loading: boolean;
+  error: string | null;
+  // CRUD functions
+  addClient: (clientData: Omit<Client, 'id'>) => Promise<any>;
+  updateClient: (id: number, clientData: Partial<Client>) => Promise<void>;
+  deleteClient: (id: number) => Promise<void>;
+  addEnrollment: (enrollmentData: Omit<Enrollment, 'id'>) => Promise<any>;
+  updateEnrollment: (id: number, enrollmentData: Partial<Enrollment>) => Promise<void>;
+  deleteEnrollment: (id: number) => Promise<void>;
+  markPaymentAsPaid: (paymentId: number) => Promise<void>;
+  markAllNotificationsAsRead: () => void;
+  deleteSelectedNotifications: (ids: number[]) => void;
+  calculateAge: (birthDate: string) => number;
+  getClientById: (id: number) => Client | undefined;
+  getEnrollmentsByClientId: (clientId: number) => Enrollment[];
+  getPaymentsByEnrollmentId: (enrollmentId: number) => MonthlyPayment[];
+  getDashboardMetrics: () => DashboardMetrics;
+  uploadMedicalCertificate: (file: File, clientId: number) => Promise<string>;
+  loadAllData: () => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
+
+export const useSupabaseData = () => {
+  const context = useContext(SupabaseContext);
+  if (context === undefined) {
+    throw new Error('useSupabaseData must be used within a SupabaseProvider');
+  }
+  return context;
+};
+
+interface SupabaseProviderProps {
+  children: ReactNode;
+}
+
+export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) => {
   const [clients, setClients] = useState<Client[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [payments, setPayments] = useState<MonthlyPayment[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Load initial data
@@ -19,6 +61,7 @@ export const useRealSupabaseData = () => {
   const loadAllData = async () => {
     try {
       setLoading(true);
+      setError(null);
       await Promise.all([
         loadClients(),
         loadEnrollments(),
@@ -26,6 +69,7 @@ export const useRealSupabaseData = () => {
       ]);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
+      setError('Erro ao carregar dados do sistema');
       toast({
         title: "Erro",
         description: "Erro ao carregar dados do sistema",
@@ -36,6 +80,10 @@ export const useRealSupabaseData = () => {
     }
   };
 
+  const refresh = async () => {
+    await loadAllData();
+  };
+
   const loadClients = async () => {
     const { data, error } = await supabase
       .from('alunos')
@@ -44,7 +92,7 @@ export const useRealSupabaseData = () => {
 
     if (error) {
       console.error('Erro ao carregar clientes:', error);
-      return;
+      throw error;
     }
 
     const mappedClients: Client[] = (data || []).map(aluno => ({
@@ -72,7 +120,7 @@ export const useRealSupabaseData = () => {
 
     if (error) {
       console.error('Erro ao carregar matrículas:', error);
-      return;
+      throw error;
     }
 
     const mappedEnrollments: Enrollment[] = (data || []).map(matricula => ({
@@ -100,7 +148,7 @@ export const useRealSupabaseData = () => {
 
     if (error) {
       console.error('Erro ao carregar pagamentos:', error);
-      return;
+      throw error;
     }
 
     const mappedPayments: MonthlyPayment[] = (data || []).map(mensalidade => ({
@@ -486,12 +534,13 @@ export const useRealSupabaseData = () => {
     }
   };
 
-  return {
+  const value: SupabaseContextType = {
     clients,
     enrollments,
     payments,
     notifications,
     loading,
+    error,
     addClient,
     updateClient,
     deleteClient,
@@ -507,6 +556,13 @@ export const useRealSupabaseData = () => {
     getPaymentsByEnrollmentId,
     getDashboardMetrics,
     uploadMedicalCertificate,
-    loadAllData
+    loadAllData,
+    refresh
   };
+
+  return (
+    <SupabaseContext.Provider value={value}>
+      {children}
+    </SupabaseContext.Provider>
+  );
 };

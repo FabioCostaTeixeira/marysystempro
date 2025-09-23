@@ -9,12 +9,12 @@ import { Plus, Search, Phone, Mail, Users, AlertTriangle } from "lucide-react";
 import { ClientForm } from "./ClientForm";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { useRealSupabaseData } from "@/hooks/useRealSupabaseData";
+import { useSupabaseData } from "@/contexts/SupabaseContext";
 import { Client } from "@/types";
 
 export const ClientList = () => {
   const navigate = useNavigate();
-  const { clients, addClient, loading } = useRealSupabaseData();
+  const { clients, addClient, loading, error } = useSupabaseData();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -52,6 +52,63 @@ export const ClientList = () => {
     
     return age > 40 && (!client.atestadoMedico || client.atestadoMedico === '');
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Alunos</h2>
+            <p className="text-muted-foreground">Carregando dados...</p>
+          </div>
+          <LoadingSkeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="shadow-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <LoadingSkeleton className="h-12 w-12 rounded-full" />
+                  <div className="flex-1">
+                    <LoadingSkeleton className="h-5 w-32 mb-2" />
+                    <LoadingSkeleton className="h-4 w-20" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <LoadingSkeleton className="h-4 w-full" />
+                <LoadingSkeleton className="h-4 w-full" />
+                <LoadingSkeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Alunos</h2>
+            <p className="text-muted-foreground">Erro ao carregar dados</p>
+          </div>
+        </div>
+        <Card className="shadow-card">
+          <CardContent className="py-12 text-center">
+            <p className="text-destructive mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

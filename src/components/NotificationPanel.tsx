@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Notification } from "@/types";
-import { useRealSupabaseData } from "@/hooks/useRealSupabaseData";
+import { useSupabaseData } from "@/contexts/SupabaseContext";
 
 interface NotificationPanelProps {
   notifications: Notification[];
@@ -32,7 +32,7 @@ export const NotificationPanel = ({
   onNotificationClick
 }: NotificationPanelProps) => {
   const navigate = useNavigate();
-  const { payments, enrollments } = useRealSupabaseData();
+  const { payments, enrollments } = useSupabaseData();
   const [selectedNotifications, setSelectedNotifications] = useState<number[]>([]);
 
   const handleSelectNotification = (id: number, checked: boolean) => {

@@ -15,12 +15,12 @@ import {
   Clock
 } from "lucide-react";
 import { useState } from "react";
-import { useRealSupabaseData } from "@/hooks/useRealSupabaseData";
+import { useSupabaseData } from "@/contexts/SupabaseContext";
 import { DateRange } from "react-day-picker";
 import { isWithinInterval } from "date-fns";
 
 export const PaymentManagement = () => {
-  const { payments, enrollments, clients, markPaymentAsPaid, getClientById } = useRealSupabaseData();
+  const { payments, enrollments, clients, markPaymentAsPaid, getClientById } = useSupabaseData();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();

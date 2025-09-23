@@ -6,7 +6,7 @@ import { Bell, Settings } from "lucide-react";
 import { useState } from "react";
 import maryLogo from "@/assets/mary-personal-logo.jpg";
 import { NotificationPanel } from "@/components/NotificationPanel";
-import { useRealSupabaseData } from "@/hooks/useRealSupabaseData";
+import { useSupabaseData } from "@/contexts/SupabaseContext";
 
 interface HeaderProps {
   title: string;
@@ -14,7 +14,7 @@ interface HeaderProps {
 
 export const Header = ({ title }: HeaderProps) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const { notifications, markAllNotificationsAsRead, deleteSelectedNotifications } = useRealSupabaseData();
+  const { notifications, markAllNotificationsAsRead, deleteSelectedNotifications } = useSupabaseData();
   
   const unreadCount = notifications.filter(n => !n.read).length;
 

@@ -10,7 +10,7 @@ import {
   CheckCircle,
   XCircle
 } from "lucide-react";
-import { useRealSupabaseData } from "@/hooks/useRealSupabaseData";
+import { useSupabaseData } from "@/contexts/SupabaseContext";
 import { 
   BarChart, 
   Bar, 
@@ -26,7 +26,7 @@ import {
 } from "recharts";
 
 export const Reports = () => {
-  const { clients, payments, enrollments, getClientById } = useRealSupabaseData();
+  const { clients, payments, enrollments, getClientById } = useSupabaseData();
 
   // Relatório 1: Receita Mensal (últimos 12 meses)
   const getMonthlyRevenue = () => {
