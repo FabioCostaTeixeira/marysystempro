@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ import { HistoricoFinanceiroTab } from "@/components/ClientProfile/HistoricoFina
 
 export const ClientProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'dados');
   const { toast } = useToast();
@@ -64,9 +65,18 @@ export const ClientProfile = () => {
     setClient(updatedClient);
   };
 
-  const handleClientDelete = (clientId: number) => {
-    deleteClient(clientId);
-    window.location.href = '/'; // Navigate away after deletion
+  const handleClientDelete = async (clientId: number) => {
+    try {
+      await deleteClient(clientId);
+      toast({
+        title: "Cliente Excluído",
+        description: "O cliente foi removido do sistema.",
+      });
+      navigate('/alunos'); // Navigate back to the client list
+    } catch (error) {
+      // The error toast is already handled in the context
+      console.error("Falha ao excluir cliente:", error);
+    }
   };
 
   const handleEnrollmentUpdate = (updatedEnrollment: Enrollment) => {
