@@ -378,13 +378,34 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
 
   const generatePaymentsForEnrollmentFunction = async (enrollmentId: number, enrollment: Omit<Enrollment, 'id'>) => {
     const startDate = new Date(enrollment.dataInicio);
-    const paymentsToGenerate = enrollment.duracaoContratoMeses;
+    
+    // Calcular número de pagamentos e intervalo baseado na recorrência
+    let paymentsToGenerate: number;
+    let monthsInterval: number;
+    
+    switch (enrollment.recorrenciaPagamento) {
+      case 'Mensal':
+        paymentsToGenerate = enrollment.duracaoContratoMeses;
+        monthsInterval = 1;
+        break;
+      case 'Trimestral':
+        paymentsToGenerate = enrollment.duracaoContratoMeses / 3;
+        monthsInterval = 3;
+        break;
+      case 'Semestral':
+        paymentsToGenerate = enrollment.duracaoContratoMeses / 6;
+        monthsInterval = 6;
+        break;
+      default:
+        paymentsToGenerate = enrollment.duracaoContratoMeses;
+        monthsInterval = 1;
+    }
     
     const paymentsData = [];
     
     for (let i = 0; i < paymentsToGenerate; i++) {
       const dueDate = new Date(startDate);
-      dueDate.setMonth(startDate.getMonth() + i);
+      dueDate.setMonth(startDate.getMonth() + (i * monthsInterval));
       
       paymentsData.push({
         id_matricula: enrollmentId,
