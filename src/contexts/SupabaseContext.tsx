@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import { Client, Enrollment, MonthlyPayment, DashboardMetrics, Notification } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 interface SupabaseContextType {
   clients: Client[];
@@ -431,7 +432,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
         .from('mensalidades')
         .update({
           status_pagamento: 'Pago',
-          data_pagamento: new Date().toISOString().split('T')[0]
+          data_pagamento: format(new Date(), 'yyyy-MM-dd')
         })
         .eq('id', paymentId);
 

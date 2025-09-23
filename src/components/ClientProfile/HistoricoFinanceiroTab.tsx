@@ -24,7 +24,10 @@ export const HistoricoFinanceiroTab = memo(({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   };
 
   const getStatusColor = (status: string) => {

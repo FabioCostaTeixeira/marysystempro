@@ -12,6 +12,7 @@ import { ClientProfileHeader } from "@/components/ClientProfile/ClientProfileHea
 import { DadosCadastraisTab } from "@/components/ClientProfile/DadosCadastraisTab";
 import { MatriculasTab } from "@/components/ClientProfile/MatriculasTab";
 import { HistoricoFinanceiroTab } from "@/components/ClientProfile/HistoricoFinanceiroTab";
+import { format } from 'date-fns';
 
 export const ClientProfile = () => {
   const { id } = useParams();
@@ -101,7 +102,7 @@ export const ClientProfile = () => {
       prev.map(p => p.id === paymentId ? {
         ...p,
         statusPagamento: "Pago" as const,
-        dataPagamento: new Date().toISOString().split('T')[0]
+        dataPagamento: format(new Date(), 'yyyy-MM-dd')
       } : p)
     );
     
@@ -249,13 +250,15 @@ export const ClientProfile = () => {
           isOpen={isNewEnrollmentFormOpen}
           onClose={() => setIsNewEnrollmentFormOpen(false)}
           onSubmit={(enrollmentData) => {
-            const startDate = new Date(enrollmentData.dataInicio);
+            const [year, month, day] = enrollmentData.dataInicio.split('-').map(Number);
+            const startDate = new Date(Date.UTC(year, month - 1, day));
+            
             const endDate = new Date(startDate);
-            endDate.setMonth(startDate.getMonth() + enrollmentData.duracaoContratoMeses);
+            endDate.setUTCMonth(startDate.getUTCMonth() + enrollmentData.duracaoContratoMeses);
             
             const completeEnrollmentData = {
               ...enrollmentData,
-              dataFim: endDate.toISOString().split('T')[0],
+              dataFim: format(endDate, 'yyyy-MM-dd'),
               statusMatricula: "Ativa" as const
             };
             addEnrollment(completeEnrollmentData);
