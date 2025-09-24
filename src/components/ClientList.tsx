@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Search, Phone, Mail, Users, AlertTriangle } from "lucide-react";
+import { Plus, Search, Phone, Mail, Users, AlertTriangle, MessageCircle } from "lucide-react";
 import { ClientForm } from "./ClientForm";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
@@ -203,17 +203,35 @@ export const ClientList = () => {
                   )}
                 </div>
               </div>
+              <div className="flex items-center gap-2 ml-auto">
+                {client.telefone && (
+                  <a
+                    href={`https://wa.me/55${client.telefone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    title="Enviar mensagem no WhatsApp"
+                  >
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MessageCircle className="h-5 w-5 text-muted-foreground hover:text-primary" />
+                    </Button>
+                  </a>
+                )}
+                {client.email && (
+                  <a
+                    href={`mailto:${client.email}`}
+                    onClick={(e) => e.stopPropagation()}
+                    title="Enviar E-mail"
+                  >
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Mail className="h-5 w-5 text-muted-foreground hover:text-primary" />
+                    </Button>
+                  </a>
+                )}
+              </div>
             </div>
           </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                {client.telefone}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                {client.email}
-              </div>
               <div className="text-sm">
                 <p className="font-medium text-foreground">Objetivos:</p>
                 <p className="text-muted-foreground">{client.objetivos}</p>
