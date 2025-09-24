@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bell, Settings } from "lucide-react";
+import { Bell, Settings, Menu } from "lucide-react";
 import { useState } from "react";
 import maryLogo from "@/assets/mary-personal-logo.jpg";
 import { NotificationPanel } from "@/components/NotificationPanel";
@@ -10,9 +10,10 @@ import { useSupabaseData } from "@/contexts/SupabaseContext";
 
 interface HeaderProps {
   title: string;
+  onMobileMenuToggle: () => void;
 }
 
-export const Header = ({ title }: HeaderProps) => {
+export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const { notifications, markAllNotificationsAsRead, deleteSelectedNotifications } = useSupabaseData();
   
@@ -31,6 +32,9 @@ export const Header = ({ title }: HeaderProps) => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={onMobileMenuToggle}>
+              <Menu className="h-6 w-6" />
+            </Button>
             <img 
               src={maryLogo} 
               alt="Mary Personal" 

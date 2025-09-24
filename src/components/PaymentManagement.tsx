@@ -225,7 +225,7 @@ export const PaymentManagement = () => {
                       <p className="font-semibold text-primary">{formatCurrency(payment.valor)}</p>
                     </div>
                     
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <Badge className={getStatusColor(payment.statusPagamento)}>
                         {payment.statusPagamento}
                       </Badge>

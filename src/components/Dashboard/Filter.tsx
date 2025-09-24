@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { MonthlyPayment } from '@/types';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ChevronDown } from 'lucide-react';
 
 interface FilterProps {
   payments: MonthlyPayment[];
@@ -25,10 +27,9 @@ export const Filter = ({ payments, onFilterChange }: FilterProps) => {
   const [selectedYear, setSelectedYear] = useState<number>(() => new Date().getFullYear());
   const [selectedMonths, setSelectedMonths] = useState<number[]>([new Date().getMonth()]);
 
-  // Efeito para aplicar o filtro inicial na montagem do componente
   useEffect(() => {
     onFilterChange({ year: selectedYear, months: selectedMonths });
-  }, []); // Executa apenas uma vez
+  }, []);
 
   const handleYearChange = (yearValue: string) => {
     const year = parseInt(yearValue, 10);
@@ -44,16 +45,9 @@ export const Filter = ({ payments, onFilterChange }: FilterProps) => {
     onFilterChange({ year: selectedYear, months: newSelectedMonths });
   };
 
-  const handleSelectAllMonths = () => {
-    const allMonthsSelected = selectedMonths.length === MONTHS.length;
-    const newSelectedMonths = allMonthsSelected ? [] : MONTHS.map(m => m.value);
-    setSelectedMonths(newSelectedMonths);
-    onFilterChange({ year: selectedYear, months: newSelectedMonths });
-  };
-
   return (
     <Card className="shadow-card">
-      <CardContent className="pt-6 flex flex-col sm:flex-row gap-4 items-center">
+      <CardContent className="pt-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Ano:</span>
           <Select value={selectedYear.toString()} onValueChange={handleYearChange}>
@@ -67,7 +61,9 @@ export const Filter = ({ payments, onFilterChange }: FilterProps) => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex-1 flex flex-wrap gap-2">
+
+        {/* Desktop Month Buttons */}
+        <div className="hidden md:flex flex-1 flex-wrap gap-2">
           <Button
             variant={selectedMonths.length === 0 ? 'default' : 'outline'}
             size="sm"
@@ -89,6 +85,36 @@ export const Filter = ({ payments, onFilterChange }: FilterProps) => {
               {month.label}
             </Button>
           ))}
+        </div>
+
+        {/* Mobile Month Dropdown */}
+        <div className="md:hidden flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Mês:</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-[180px] justify-between">
+                {selectedMonths.length === 0
+                  ? 'Todos'
+                  : selectedMonths.length === 1
+                  ? MONTHS.find(m => m.value === selectedMonths[0])?.label
+                  : `${selectedMonths.length} selecionados`}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              {
+                MONTHS.map(month => (
+                  <DropdownMenuCheckboxItem
+                    key={month.value}
+                    checked={selectedMonths.includes(month.value)}
+                    onCheckedChange={() => handleMonthClick(month.value)}
+                  >
+                    {month.label}
+                  </DropdownMenuCheckboxItem>
+                ))
+              }
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
     </Card>
