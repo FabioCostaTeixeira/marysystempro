@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Search, Phone, Mail, Users, AlertTriangle, MessageCircle } from "lucide-react";
+import { Plus, Search, Users, AlertTriangle } from "lucide-react";
 import { ClientForm } from "./ClientForm";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
@@ -212,8 +212,8 @@ export const ClientList = () => {
                     onClick={(e) => e.stopPropagation()}
                     title="Enviar mensagem no WhatsApp"
                   >
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MessageCircle className="h-5 w-5 text-muted-foreground hover:text-primary" />
+                    <Button variant="ghost" size="icon" className="h-16 w-16">
+                      <img src="/icones/whatsapp-icon.png" alt="WhatsApp" className="h-10 w-10" />
                     </Button>
                   </a>
                 )}
@@ -223,8 +223,8 @@ export const ClientList = () => {
                     onClick={(e) => e.stopPropagation()}
                     title="Enviar E-mail"
                   >
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Mail className="h-5 w-5 text-muted-foreground hover:text-primary" />
+                    <Button variant="ghost" size="icon" className="h-16 w-16">
+                      <img src="/icones/email icon.png" alt="E-mail" className="h-10 w-10" />
                     </Button>
                   </a>
                 )}
