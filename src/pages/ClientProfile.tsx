@@ -12,6 +12,7 @@ import { ClientProfileHeader } from "@/components/ClientProfile/ClientProfileHea
 import { DadosCadastraisTab } from "@/components/ClientProfile/DadosCadastraisTab";
 import { MatriculasTab } from "@/components/ClientProfile/MatriculasTab";
 import { HistoricoFinanceiroTab } from "@/components/ClientProfile/HistoricoFinanceiroTab";
+import { FrequenciaTab } from "@/components/ClientProfile/FrequenciaTab";
 import { format } from 'date-fns';
 
 export const ClientProfile = () => {
@@ -165,6 +166,7 @@ export const ClientProfile = () => {
               <LoadingSkeleton className="h-12 w-32" />
               <LoadingSkeleton className="h-12 w-32" />
               <LoadingSkeleton className="h-12 w-32" />
+              <LoadingSkeleton className="h-12 w-32" />
             </div>
             <div className="p-6 space-y-4">
               <LoadingSkeleton className="h-6 w-full" />
@@ -207,10 +209,11 @@ export const ClientProfile = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="dados">Dados Cadastrais</TabsTrigger>
             <TabsTrigger value="matriculas">Matrícula(s)</TabsTrigger>
             <TabsTrigger value="financeiro">Histórico Financeiro</TabsTrigger>
+            <TabsTrigger value="frequencia">Frequência</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Dados Cadastrais */}
@@ -241,6 +244,11 @@ export const ClientProfile = () => {
               onMarkAsPaid={handlePaymentMarkAsPaid}
               highlightedPaymentId={highlightedPaymentId}
             />
+          </TabsContent>
+
+          {/* Tab 4: Frequência */}
+          <TabsContent value="frequencia">
+            <FrequenciaTab clientId={client.id} />
           </TabsContent>
         </Tabs>
 

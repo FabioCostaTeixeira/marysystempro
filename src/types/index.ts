@@ -35,6 +35,14 @@ export interface MonthlyPayment {
   statusPagamento: "Pendente" | "Pago" | "Atrasado";
 }
 
+export interface Presence {
+  id?: number;
+  id_aluno: number;
+  data_treino: string; // ISO date string
+  status: 'Presente' | 'Ausente';
+  observacao?: string;
+}
+
 export interface DashboardMetrics {
   totalReceived: number;
   totalPending: number;
