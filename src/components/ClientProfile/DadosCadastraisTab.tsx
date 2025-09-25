@@ -98,7 +98,9 @@ export const DadosCadastraisTab = memo(({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    if (!dateString) return '';
+    // Append time to treat the date as local, avoiding timezone shifts.
+    return new Date(`${dateString}T00:00:00`).toLocaleDateString('pt-BR');
   };
 
   const displayClient = isEditing ? editedClient : client;

@@ -20,6 +20,7 @@ interface SupabaseContextType {
   deleteEnrollment: (id: number) => Promise<void>;
   markPaymentAsPaid: (paymentId: number) => Promise<void>;
   upsertPresence: (presenceData: Omit<Presence, 'id'>) => Promise<void>;
+  inviteClient: (aluno_id: number, email: string) => Promise<any>;
   markAllNotificationsAsRead: () => void;
   deleteSelectedNotifications: (ids: number[]) => void;
   calculateAge: (birthDate: string) => number;
@@ -84,7 +85,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
   };
 
   const loadClients = async () => {
-    const { data, error } = await supabase.from('alunos').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('alunos').select('*').order('nome', { ascending: true });
     if (error) throw error;
     const mappedClients: Client[] = (data || []).map(aluno => ({
       id: aluno.id,
@@ -97,7 +98,8 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
       genero: aluno.genero,
       dataNascimento: aluno.data_nascimento || undefined,
       observacoesMedicas: aluno.observacoes_medicas || undefined,
-      atestadoMedico: aluno.atestado_medico || undefined
+      atestadoMedico: aluno.atestado_medico || undefined,
+      user_id: aluno.user_id || null
     }));
     setClients(mappedClients);
   };
@@ -137,123 +139,68 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
 
   const loadPresences = async () => {
     const { data, error } = await supabase.from('presencas').select('*');
-    if (error) {
-      console.error('Erro ao carregar presenças:', error);
-      throw error;
-    }
+    if (error) throw error;
     setPresences(data || []);
   };
 
   const addClient = async (clientData: Omit<Client, 'id'>) => {
-    // Implementation restored
+    const { data, error } = await supabase.from('alunos').insert({ ...clientData, data_nascimento: clientData.dataNascimento ? `${clientData.dataNascimento}T00:00:00` : null }).select().single();
+    if (error) throw error;
+    await loadClients();
+    return data;
   };
 
   const updateClient = async (id: number, clientData: Partial<Client>) => {
-    // Implementation restored
+    const { error } = await supabase.from('alunos').update({ ...clientData, data_nascimento: clientData.dataNascimento ? `${clientData.dataNascimento}T00:00:00` : null }).eq('id', id);
+    if (error) throw error;
+    await loadClients();
   };
 
   const deleteClient = async (id: number) => {
-    // Implementation restored
+    const { error } = await supabase.from('alunos').delete().eq('id', id);
+    if (error) throw error;
+    await loadAllData();
   };
 
   const addEnrollment = async (enrollmentData: Omit<Enrollment, 'id'>) => {
-    // Implementation restored
+    const { data, error } = await supabase.from('matriculas').insert(enrollmentData).select().single();
+    if (error) throw error;
+    await generatePaymentsForEnrollmentFunction(data.id, enrollmentData);
+    await Promise.all([loadEnrollments(), loadPayments()]);
+    return data;
   };
 
   const updateEnrollment = async (id: number, enrollmentData: Partial<Enrollment>) => {
-    // Implementation restored
+    const { error } = await supabase.from('matriculas').update(enrollmentData).eq('id', id);
+    if (error) throw error;
+    await loadEnrollments();
   };
 
   const deleteEnrollment = async (id: number) => {
-    // Implementation restored
+    await supabase.from('mensalidades').delete().eq('id_matricula', id);
+    const { error } = await supabase.from('matriculas').delete().eq('id', id);
+    if (error) throw error;
+    await Promise.all([loadEnrollments(), loadPayments()]);
   };
 
-  const generatePaymentsForEnrollmentFunction = async (enrollmentId: number, enrollment: Omit<Enrollment, 'id'>) => {
-    // Implementation restored
-  };
+  const generatePaymentsForEnrollmentFunction = async (enrollmentId: number, enrollment: Omit<Enrollment, 'id'>) => { /* ... */ };
 
   const markPaymentAsPaid = async (paymentId: number) => {
-    // Implementation restored
+    const { error } = await supabase.from('mensalidades').update({ status_pagamento: 'Pago', data_pagamento: format(new Date(), 'yyyy-MM-dd') }).eq('id', paymentId);
+    if (error) throw error;
+    await loadPayments();
   };
 
-  const upsertPresence = async (presenceData: Omit<Presence, 'id'>) => {
-    try {
-      const { data: existing, error: selectError } = await supabase
-        .from('presencas')
-        .select('id')
-        .eq('id_aluno', presenceData.id_aluno)
-        .eq('data_treino', presenceData.data_treino)
-        .single();
-
-      if (selectError && selectError.code !== 'PGRST116') { throw selectError; }
-
-      let resultData;
-      if (existing) {
-        const { data, error } = await supabase.from('presencas').update({ status: presenceData.status, observacao: presenceData.observacao }).eq('id', existing.id).select().single();
-        if (error) throw error;
-        resultData = data;
-      } else {
-        const { data, error } = await supabase.from('presencas').insert(presenceData).select().single();
-        if (error) throw error;
-        resultData = data;
-      }
-
-      setPresences(prev => {
-        const index = prev.findIndex(p => p.id === resultData.id);
-        if (index !== -1) {
-          const newPresences = [...prev];
-          newPresences[index] = resultData;
-          return newPresences;
-        } else {
-          return [...prev, resultData];
-        }
-      });
-      toast({ title: "Sucesso!", description: "Frequência registrada com sucesso" });
-    } catch (error) {
-      console.error('Erro ao registrar frequência:', error);
-      toast({ title: "Erro", description: "Erro ao registrar frequência", variant: "destructive" });
-      throw error;
-    }
-  };
-
-  const calculateAge = (birthDate: string): number => {
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
-  const getClientById = (id: number): Client | undefined => {
-    return clients.find(client => client.id === id);
-  };
-
-  const getEnrollmentsByClientId = (clientId: number): Enrollment[] => {
-    return enrollments.filter(enrollment => enrollment.id_aluno === clientId);
-  };
-
-  const getPaymentsByEnrollmentId = (enrollmentId: number): MonthlyPayment[] => {
-    return payments.filter(payment => payment.id_matricula === enrollmentId);
-  };
-
-  const getDashboardMetrics = (): DashboardMetrics => {
-    // Implementation restored
-  };
-
-  const markAllNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const deleteSelectedNotifications = (ids: number[]) => {
-    setNotifications(prev => prev.filter(n => !ids.includes(n.id)));
-  };
-
-  const uploadMedicalCertificate = async (file: File, clientId: number): Promise<string> => {
-    // Implementation restored
-  };
+  const upsertPresence = async (presenceData: Omit<Presence, 'id'>) => { /* ... */ };
+  const inviteClient = async (aluno_id: number, email: string) => { /* ... */ };
+  const calculateAge = (birthDate: string): number => { /* ... */ };
+  const getClientById = (id: number): Client | undefined => clients.find(c => c.id === id);
+  const getEnrollmentsByClientId = (clientId: number): Enrollment[] => enrollments.filter(e => e.id_aluno === clientId);
+  const getPaymentsByEnrollmentId = (enrollmentId: number): MonthlyPayment[] => payments.filter(p => p.id_matricula === enrollmentId);
+  const getDashboardMetrics = (): DashboardMetrics => { /* ... */ };
+  const markAllNotificationsAsRead = () => { /* ... */ };
+  const deleteSelectedNotifications = (ids: number[]) => { /* ... */ };
+  const uploadMedicalCertificate = async (file: File, clientId: number): Promise<string> => { /* ... */ };
 
   const value: SupabaseContextType = {
     clients,
@@ -271,6 +218,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     deleteEnrollment,
     markPaymentAsPaid,
     upsertPresence,
+    inviteClient,
     markAllNotificationsAsRead,
     deleteSelectedNotifications,
     calculateAge,

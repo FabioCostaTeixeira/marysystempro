@@ -10,6 +10,7 @@ export interface Client {
   dataNascimento?: string;
   observacoesMedicas?: string;
   atestadoMedico?: string;
+  user_id?: string | null;
 }
 
 export interface Enrollment {

@@ -49,9 +49,10 @@ export const ClientForm = ({ isOpen, onClose, onSave }: ClientFormProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    console.log('Iniciando salvamento...');
+
     // Basic validation
     if (!formData.nome || !formData.telefone || !formData.email || !formData.genero || !formData.objetivos) {
       toast({
@@ -73,14 +74,24 @@ export const ClientForm = ({ isOpen, onClose, onSave }: ClientFormProps) => {
       return;
     }
 
-    onSave(formData);
-    handleReset();
-    onClose();
-    
-    toast({
-      title: "Sucesso",
-      description: "Novo aluno cadastrado com sucesso!",
-    });
+    try {
+      console.log('Dados a serem salvos:', formData);
+      await onSave(formData);
+      handleReset();
+      onClose();
+      
+      toast({
+        title: "Sucesso",
+        description: "Novo aluno cadastrado com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao chamar a API:', error);
+      toast({
+        title: "Erro no Cadastro",
+        description: "Houve um problema ao salvar o aluno. Verifique o console para mais detalhes.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleReset = () => {

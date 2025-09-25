@@ -4,19 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Repeat } from "lucide-react";
+import { ArrowLeft, Repeat, Mail } from "lucide-react";
 import { Client, Enrollment } from "@/types";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface ClientProfileHeaderProps {
   client: Client;
   enrollments: Enrollment[];
   needsMedicalCertificate: boolean;
+  onInvite: () => void;
+  isInviting: boolean;
 }
 
 export const ClientProfileHeader = memo(({ 
   client, 
   enrollments,
-  needsMedicalCertificate 
+  needsMedicalCertificate,
+  onInvite,
+  isInviting
 }: ClientProfileHeaderProps) => {
   const navigate = useNavigate();
 
@@ -47,35 +52,47 @@ export const ClientProfileHeader = memo(({
       {/* Client Info Card */}
       <Card className="shadow-card">
         <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={client.foto} alt={client.nome} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                {client.nome.split(' ').map(n => n[0]).join('').slice(0, 2)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h2 className="text-2xl font-semibold">{client.nome}</h2>
-              {activeEnrollment && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                  <Repeat className="h-4 w-4" />
-                  <span>{activeEnrollment.frequenciaSemanal}x por semana</span>
-                </div>
-              )}
-              <div className="flex gap-2 mt-2">
-                <Badge 
-                  variant={client.status === "Ativo" ? "default" : "secondary"}
-                  className={client.status === "Ativo" ? "bg-success text-success-foreground" : ""}
-                >
-                  {client.status}
-                </Badge>
-                {needsMedicalCertificate && (
-                  <Badge variant="outline" className="text-warning border-warning">
-                    Atestado Pendente
-                  </Badge>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4 w-full">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={client.foto} alt={client.nome} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                  {client.nome.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h2 className="text-2xl font-semibold">{client.nome}</h2>
+                {activeEnrollment && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                    <Repeat className="h-4 w-4" />
+                    <span>{activeEnrollment.frequenciaSemanal}x por semana</span>
+                  </div>
                 )}
+                <div className="flex gap-2 mt-2">
+                  <Badge 
+                    variant={client.status === "Ativo" ? "default" : "secondary"}
+                    className={client.status === "Ativo" ? "bg-success text-success-foreground" : ""}
+                  >
+                    {client.status}
+                  </Badge>
+                  {needsMedicalCertificate && (
+                    <Badge variant="outline" className="text-warning border-warning">
+                      Atestado Pendente
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
+            {!client.user_id && (
+              <Button onClick={onInvite} disabled={isInviting} className="gradient-primary text-primary-foreground shadow-primary w-full sm:w-auto">
+                {isInviting ? (
+                  <LoadingSpinner className="h-4 w-4 mr-2" />
+                ) : (
+                  <Mail className="h-4 w-4 mr-2" />
+                )}
+                Convidar para o Portal
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

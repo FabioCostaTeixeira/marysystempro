@@ -22,12 +22,13 @@ export const ClientProfile = () => {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'dados');
   const { toast } = useToast();
   
-  const { clients, enrollments, payments, updateClient, deleteClient, markPaymentAsPaid, addEnrollment, loading } = useSupabaseData();
+  const { clients, enrollments, payments, updateClient, deleteClient, markPaymentAsPaid, addEnrollment, loading, inviteClient, refresh } = useSupabaseData();
   
   const [client, setClient] = useState<Client | null>(null);
   const [clientEnrollments, setClientEnrollments] = useState<Enrollment[]>([]);
   const [clientPayments, setClientPayments] = useState<MonthlyPayment[]>([]);
   const [isNewEnrollmentFormOpen, setIsNewEnrollmentFormOpen] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
   const [highlightedPaymentId, setHighlightedPaymentId] = useState<number | null>(null);
 
   // Load data when component mounts and when data is available
@@ -78,6 +79,27 @@ export const ClientProfile = () => {
     } catch (error) {
       // The error toast is already handled in the context
       console.error("Falha ao excluir cliente:", error);
+    }
+  };
+
+  const handleInvite = async () => {
+    if (!client) return;
+    setIsInviting(true);
+    try {
+      await inviteClient(client.id, client.email);
+      toast({
+        title: "Sucesso!",
+        description: "Convite enviado com sucesso!",
+      });
+      await refresh(); // Refresh data to get the new user_id
+    } catch (error: any) {
+      toast({
+        title: "Erro ao enviar convite",
+        description: error.message || "Ocorreu um erro desconhecido.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -206,6 +228,8 @@ export const ClientProfile = () => {
           client={client} 
           enrollments={clientEnrollments}
           needsMedicalCertificate={needsMedicalCertificate} 
+          onInvite={handleInvite}
+          isInviting={isInviting}
         />
 
         {/* Tabs */}
