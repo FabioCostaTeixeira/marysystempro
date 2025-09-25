@@ -204,15 +204,16 @@ export const ClientProfile = () => {
       <div className="max-w-6xl mx-auto space-y-6">
         <ClientProfileHeader 
           client={client} 
+          enrollments={clientEnrollments}
           needsMedicalCertificate={needsMedicalCertificate} 
         />
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="dados">Dados Cadastrais</TabsTrigger>
+            <TabsTrigger value="dados">Perfil</TabsTrigger>
             <TabsTrigger value="matriculas">Matrícula(s)</TabsTrigger>
-            <TabsTrigger value="financeiro">Histórico Financeiro</TabsTrigger>
+            <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
             <TabsTrigger value="frequencia">Frequência</TabsTrigger>
           </TabsList>
 

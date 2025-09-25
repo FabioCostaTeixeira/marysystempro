@@ -1,22 +1,30 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
-import { Client } from "@/types";
+import { ArrowLeft, Repeat } from "lucide-react";
+import { Client, Enrollment } from "@/types";
 
 interface ClientProfileHeaderProps {
   client: Client;
+  enrollments: Enrollment[];
   needsMedicalCertificate: boolean;
 }
 
 export const ClientProfileHeader = memo(({ 
   client, 
+  enrollments,
   needsMedicalCertificate 
 }: ClientProfileHeaderProps) => {
   const navigate = useNavigate();
+
+  const activeEnrollment = useMemo(() => {
+    return enrollments
+      .filter(e => e.statusMatricula === 'Ativa')
+      .sort((a, b) => new Date(b.dataInicio).getTime() - new Date(a.dataInicio).getTime())[0];
+  }, [enrollments]);
 
   return (
     <>
@@ -31,7 +39,7 @@ export const ClientProfileHeader = memo(({
           Voltar
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Dossiê do Aluno</h1>
+          <h1 className="text-3xl font-bold">Perfil do Aluno</h1>
           <p className="text-muted-foreground">Informações completas de {client.nome}</p>
         </div>
       </div>
@@ -48,6 +56,12 @@ export const ClientProfileHeader = memo(({
             </Avatar>
             <div className="flex-1">
               <h2 className="text-2xl font-semibold">{client.nome}</h2>
+              {activeEnrollment && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                  <Repeat className="h-4 w-4" />
+                  <span>{activeEnrollment.frequenciaSemanal}x por semana</span>
+                </div>
+              )}
               <div className="flex gap-2 mt-2">
                 <Badge 
                   variant={client.status === "Ativo" ? "default" : "secondary"}

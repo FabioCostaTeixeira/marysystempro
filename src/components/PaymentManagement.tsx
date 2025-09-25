@@ -206,47 +206,47 @@ export const PaymentManagement = () => {
               const enrollment = getEnrollmentById(payment.id_matricula);
               
               return (
-                <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                    <div>
+                <div key={payment.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4 items-center">
+                    <div className="col-span-2 sm:col-span-1">
                       <p className="font-semibold">{client?.nome || 'Cliente não encontrado'}</p>
                       <p className="text-sm text-muted-foreground">
                         {enrollment?.tipoTreino} • {enrollment?.frequenciaSemanal}x/semana
                       </p>
                     </div>
                     
-                    <div className="text-center">
+                    <div className="text-left sm:text-center">
                       <p className="text-sm text-muted-foreground">Vencimento</p>
                       <p className="font-medium">{formatDate(payment.dataVencimento)}</p>
                     </div>
                     
-                    <div className="text-center">
+                    <div className="text-left sm:text-center">
                       <p className="text-sm text-muted-foreground">Valor</p>
                       <p className="font-semibold text-primary">{formatCurrency(payment.valor)}</p>
                     </div>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-2 pt-4 border-t sm:border-none sm:pt-0 sm:items-end">
+                    <Badge className={getStatusColor(payment.statusPagamento)}>
+                      {payment.statusPagamento}
+                    </Badge>
                     
-                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <Badge className={getStatusColor(payment.statusPagamento)}>
-                        {payment.statusPagamento}
-                      </Badge>
-                      
-                      {payment.statusPagamento !== "Pago" && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleMarkAsPaid(payment.id)}
-                          className="ml-2"
-                        >
-                          <Check className="h-4 w-4 mr-1" />
-                          Marcar como Paga
-                        </Button>
-                      )}
-                      
-                      {payment.statusPagamento === "Pago" && payment.dataPagamento && (
-                        <p className="text-xs text-muted-foreground ml-2">
-                          Pago em {formatDate(payment.dataPagamento)}
-                        </p>
-                      )}
-                    </div>
+                    {payment.statusPagamento !== "Pago" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleMarkAsPaid(payment.id)}
+                        className="w-full sm:w-auto text-xs sm:text-sm"
+                      >
+                        <Check className="h-4 w-4 mr-1" />
+                        Marcar como Paga
+                      </Button>
+                    )}
+                    
+                    {payment.statusPagamento === "Pago" && payment.dataPagamento && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Pago em {formatDate(payment.dataPagamento)}
+                      </p>
+                    )}
                   </div>
                 </div>
               );
