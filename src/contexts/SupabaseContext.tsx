@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import { Client, Enrollment, MonthlyPayment, Presence, DashboardMetrics, Notification } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, addMonths } from 'date-fns';
 
 interface SupabaseContextType {
   clients: Client[];
@@ -237,7 +237,53 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     await Promise.all([loadEnrollments(), loadPayments()]);
   };
 
-  const generatePaymentsForEnrollmentFunction = async (enrollmentId: number, enrollment: Omit<Enrollment, 'id'>) => { /* ... */ };
+  const generatePaymentsForEnrollmentFunction = async (enrollmentId: number, enrollment: Omit<Enrollment, 'id'>) => {
+    try {
+      // Corrige o bug de fuso horário na data de início
+      const startDate = new Date(`${enrollment.dataInicio}T00:00:00`);
+      
+      let paymentsToGenerate: number;
+      let monthsInterval: number;
+      
+      switch (enrollment.recorrenciaPagamento) {
+        case 'Trimestral':
+          paymentsToGenerate = Math.floor(enrollment.duracaoContratoMeses / 3);
+          monthsInterval = 3;
+          break;
+        case 'Semestral':
+          paymentsToGenerate = Math.floor(enrollment.duracaoContratoMeses / 6);
+          monthsInterval = 6;
+          break;
+        case 'Mensal':
+        default:
+          paymentsToGenerate = enrollment.duracaoContratoMeses;
+          monthsInterval = 1;
+      }
+      
+      if (paymentsToGenerate <= 0) return;
+
+      const paymentsData = [];
+      for (let i = 0; i < paymentsToGenerate; i++) {
+        const dueDate = addMonths(startDate, i * monthsInterval);
+        
+        paymentsData.push({
+          id_matricula: enrollmentId,
+          valor: enrollment.valorMensalidade,
+          data_vencimento: format(dueDate, 'yyyy-MM-dd'), // Formato correto para o DB
+          status_pagamento: 'Pendente'
+        });
+      }
+
+      const { error } = await supabase.from('mensalidades').insert(paymentsData);
+
+      if (error) {
+        console.error('Erro ao gerar pagamentos:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Falha crítica na geração de pagamentos:', error);
+    }
+  };
 
   const markPaymentAsPaid = async (paymentId: number) => {
     const { error } = await supabase.from('mensalidades').update({ status_pagamento: 'Pago', data_pagamento: format(new Date(), 'yyyy-MM-dd') }).eq('id', paymentId);
