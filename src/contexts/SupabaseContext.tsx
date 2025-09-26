@@ -144,14 +144,44 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
   };
 
   const addClient = async (clientData: Omit<Client, 'id'>) => {
-    const { data, error } = await supabase.from('alunos').insert({ ...clientData, data_nascimento: clientData.dataNascimento ? `${clientData.dataNascimento}T00:00:00` : null }).select().single();
+    const { data, error } = await supabase
+      .from('alunos')
+      .insert({
+        nome: clientData.nome,
+        telefone: clientData.telefone,
+        email: clientData.email,
+        status: clientData.status,
+        foto: clientData.foto,
+        objetivos: clientData.objetivos,
+        genero: clientData.genero,
+        data_nascimento: clientData.dataNascimento ? `${clientData.dataNascimento}T00:00:00` : null,
+        observacoes_medicas: clientData.observacoesMedicas || null,
+        atestado_medico: clientData.atestadoMedico || null
+      })
+      .select()
+      .single();
     if (error) throw error;
     await loadClients();
     return data;
   };
 
   const updateClient = async (id: number, clientData: Partial<Client>) => {
-    const { error } = await supabase.from('alunos').update({ ...clientData, data_nascimento: clientData.dataNascimento ? `${clientData.dataNascimento}T00:00:00` : null }).eq('id', id);
+    const { error } = await supabase
+      .from('alunos')
+      .update({
+        nome: clientData.nome,
+        telefone: clientData.telefone,
+        email: clientData.email,
+        status: clientData.status,
+        foto: clientData.foto,
+        objetivos: clientData.objetivos,
+        genero: clientData.genero,
+        data_nascimento: clientData.dataNascimento ? `${clientData.dataNascimento}T00:00:00` : null,
+        observacoes_medicas: clientData.observacoesMedicas || null,
+        atestado_medico: clientData.atestadoMedico || null,
+        user_id: clientData.user_id || null
+      })
+      .eq('id', id);
     if (error) throw error;
     await loadClients();
   };
@@ -163,7 +193,19 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
   };
 
   const addEnrollment = async (enrollmentData: Omit<Enrollment, 'id'>) => {
-    const { data, error } = await supabase.from('matriculas').insert(enrollmentData).select().single();
+    const dbData = {
+      id_aluno: enrollmentData.id_aluno,
+      data_inicio: `${enrollmentData.dataInicio}T00:00:00`,
+      data_fim: `${enrollmentData.dataFim}T00:00:00`,
+      tipo_treino: enrollmentData.tipoTreino,
+      frequencia_semanal: enrollmentData.frequenciaSemanal,
+      duracao_contrato_meses: enrollmentData.duracaoContratoMeses,
+      valor_mensalidade: enrollmentData.valorMensalidade,
+      recorrencia_pagamento: enrollmentData.recorrenciaPagamento,
+      status_matricula: enrollmentData.statusMatricula,
+      observacao_alteracao: enrollmentData.observacaoAlteracao || null
+    };
+    const { data, error } = await supabase.from('matriculas').insert(dbData).select().single();
     if (error) throw error;
     await generatePaymentsForEnrollmentFunction(data.id, enrollmentData);
     await Promise.all([loadEnrollments(), loadPayments()]);
@@ -171,7 +213,19 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
   };
 
   const updateEnrollment = async (id: number, enrollmentData: Partial<Enrollment>) => {
-    const { error } = await supabase.from('matriculas').update(enrollmentData).eq('id', id);
+    const dbData = {
+      id_aluno: enrollmentData.id_aluno,
+      data_inicio: enrollmentData.dataInicio ? `${enrollmentData.dataInicio}T00:00:00` : undefined,
+      data_fim: enrollmentData.dataFim ? `${enrollmentData.dataFim}T00:00:00` : undefined,
+      tipo_treino: enrollmentData.tipoTreino,
+      frequencia_semanal: enrollmentData.frequenciaSemanal,
+      duracao_contrato_meses: enrollmentData.duracaoContratoMeses,
+      valor_mensalidade: enrollmentData.valorMensalidade,
+      recorrencia_pagamento: enrollmentData.recorrenciaPagamento,
+      status_matricula: enrollmentData.statusMatricula,
+      observacao_alteracao: enrollmentData.observacaoAlteracao || null
+    };
+    const { error } = await supabase.from('matriculas').update(dbData).eq('id', id);
     if (error) throw error;
     await loadEnrollments();
   };
