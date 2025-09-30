@@ -22,7 +22,7 @@ export const ClientProfile = () => {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'dados');
   const { toast } = useToast();
   
-  const { clients, enrollments, payments, updateClient, deleteClient, markPaymentAsPaid, addEnrollment, loading, inviteClient, refresh } = useSupabaseData();
+  const { clients, enrollments, payments, updateClient, deleteClient, updateEnrollment, deleteEnrollment, markPaymentAsPaid, addEnrollment, loading, inviteClient, refresh } = useSupabaseData();
   
   const [client, setClient] = useState<Client | null>(null);
   const [clientEnrollments, setClientEnrollments] = useState<Enrollment[]>([]);
@@ -103,14 +103,26 @@ export const ClientProfile = () => {
     }
   };
 
-  const handleEnrollmentUpdate = (updatedEnrollment: Enrollment) => {
-    setClientEnrollments(prev => 
-      prev.map(e => e.id === updatedEnrollment.id ? updatedEnrollment : e)
-    );
+  const handleEnrollmentUpdate = async (enrollmentToUpdate: Enrollment) => {
+    try {
+      const updatedData = await updateEnrollment(enrollmentToUpdate.id, enrollmentToUpdate);
+      if (updatedData) {
+        setClientEnrollments(prev => 
+          prev.map(e => e.id === updatedData.id ? updatedData : e)
+        );
+      }
+    } catch (error) {
+      console.error("Falha ao atualizar matrícula:", error);
+    }
   };
 
-  const handleEnrollmentDelete = (enrollmentId: number) => {
-    setClientEnrollments(prev => prev.filter(e => e.id !== enrollmentId));
+  const handleEnrollmentDelete = async (enrollmentId: number) => {
+    try {
+      await deleteEnrollment(enrollmentId);
+      setClientEnrollments(prev => prev.filter(e => e.id !== enrollmentId));
+    } catch (error) {
+      console.error("Falha ao excluir matrícula:", error);
+    }
   };
 
   const handleNewEnrollment = () => {

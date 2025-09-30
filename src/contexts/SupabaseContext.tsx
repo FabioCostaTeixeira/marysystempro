@@ -213,28 +213,47 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
   };
 
   const updateEnrollment = async (id: number, enrollmentData: Partial<Enrollment>) => {
-    const dbData = {
-      id_aluno: enrollmentData.id_aluno,
-      data_inicio: enrollmentData.dataInicio ? `${enrollmentData.dataInicio}T00:00:00` : undefined,
-      data_fim: enrollmentData.dataFim ? `${enrollmentData.dataFim}T00:00:00` : undefined,
-      tipo_treino: enrollmentData.tipoTreino,
-      frequencia_semanal: enrollmentData.frequenciaSemanal,
-      duracao_contrato_meses: enrollmentData.duracaoContratoMeses,
-      valor_mensalidade: enrollmentData.valorMensalidade,
-      recorrencia_pagamento: enrollmentData.recorrenciaPagamento,
-      status_matricula: enrollmentData.statusMatricula,
-      observacao_alteracao: enrollmentData.observacaoAlteracao || null
-    };
-    const { error } = await supabase.from('matriculas').update(dbData).eq('id', id);
-    if (error) throw error;
-    await loadEnrollments();
+    try {
+      const dbData = {
+        id_aluno: enrollmentData.id_aluno,
+        data_inicio: enrollmentData.dataInicio ? `${enrollmentData.dataInicio}T00:00:00` : undefined,
+        data_fim: enrollmentData.dataFim ? `${enrollmentData.dataFim}T00:00:00` : undefined,
+        tipo_treino: enrollmentData.tipoTreino,
+        frequencia_semanal: enrollmentData.frequenciaSemanal,
+        duracao_contrato_meses: enrollmentData.duracaoContratoMeses,
+        valor_mensalidade: enrollmentData.valorMensalidade,
+        recorrencia_pagamento: enrollmentData.recorrenciaPagamento,
+        status_matricula: enrollmentData.statusMatricula,
+        observacao_alteracao: enrollmentData.observacaoAlteracao || null
+      };
+      const { data, error } = await supabase.from('matriculas').update(dbData).eq('id', id).select().single();
+      if (error) throw error;
+      toast({ title: "Sucesso!", description: "Matrícula atualizada com sucesso." });
+      return data;
+    } catch (error) {
+      console.error('Erro ao atualizar matrícula:', error);
+      toast({ title: "Erro", description: "Falha ao atualizar a matrícula.", variant: "destructive" });
+      throw error;
+    }
   };
 
   const deleteEnrollment = async (id: number) => {
-    await supabase.from('mensalidades').delete().eq('id_matricula', id);
-    const { error } = await supabase.from('matriculas').delete().eq('id', id);
-    if (error) throw error;
-    await Promise.all([loadEnrollments(), loadPayments()]);
+    try {
+      // Deleta as mensalidades relacionadas primeiro
+      const { error: paymentError } = await supabase.from('mensalidades').delete().eq('id_matricula', id);
+      if (paymentError) throw paymentError;
+
+      // Deleta a matrícula
+      const { error: enrollmentError } = await supabase.from('matriculas').delete().eq('id', id);
+      if (enrollmentError) throw enrollmentError;
+
+      await Promise.all([loadEnrollments(), loadPayments()]);
+      toast({ title: "Sucesso!", description: "Matrícula e mensalidades relacionadas foram excluídas." });
+    } catch (error) {
+      console.error('Erro ao excluir matrícula:', error);
+      toast({ title: "Erro", description: "Falha ao excluir a matrícula.", variant: "destructive" });
+      throw error;
+    }
   };
 
   const generatePaymentsForEnrollmentFunction = async (enrollmentId: number, enrollment: Omit<Enrollment, 'id'>) => {
