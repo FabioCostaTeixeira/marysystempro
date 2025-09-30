@@ -33,6 +33,7 @@ export const EnrollmentList = () => {
 
   const handleUpdateEnrollment = (updatedEnrollment: Enrollment) => {
     updateEnrollment(updatedEnrollment.id, updatedEnrollment);
+    setSelectedEnrollment(updatedEnrollment);
   };
 
   const handleDeleteEnrollment = (enrollmentId: number) => {

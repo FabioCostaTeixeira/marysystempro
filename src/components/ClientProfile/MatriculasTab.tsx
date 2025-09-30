@@ -140,7 +140,10 @@ export const MatriculasTab = memo(({
             setIsEnrollmentModalOpen(false);
             setSelectedEnrollment(null);
           }}
-          onUpdate={onEnrollmentUpdate}
+          onUpdate={(updatedEnrollment) => {
+            onEnrollmentUpdate(updatedEnrollment);
+            setSelectedEnrollment(updatedEnrollment);
+          }}
           onDelete={onEnrollmentDelete}
         />
       )}
