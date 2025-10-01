@@ -1,12 +1,22 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bell, Settings, Menu } from "lucide-react";
-import { useState } from "react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Bell, Settings, Menu, LogOut, User, Mail, Phone, Calendar as CalendarIcon } from "lucide-react";
 import maryLogo from "@/assets/mary-personal-logo.jpg";
 import { NotificationPanel } from "@/components/NotificationPanel";
 import { useSupabaseData } from "@/contexts/SupabaseContext";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface HeaderProps {
   title: string;
@@ -15,8 +25,23 @@ interface HeaderProps {
 
 export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const { notifications, markAllNotificationsAsRead, deleteSelectedNotifications } = useSupabaseData();
+  const { supabase, notifications, markAllNotificationsAsRead, deleteSelectedNotifications } = useSupabaseData();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const navigate = useNavigate();
   
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, [supabase]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleMarkAllAsRead = () => {
@@ -25,6 +50,15 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
 
   const handleDeleteSelected = (ids: number[]) => {
     deleteSelectedNotifications(ids);
+  };
+
+  const formatJoinDate = (dateString: string | undefined) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `Há ${diffDays} dias`;
   };
 
   return (
@@ -73,10 +107,38 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
             <Button variant="ghost" size="icon">
               <Settings className="h-5 w-5" />
             </Button>
-            <Avatar>
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback className="bg-primary text-primary-foreground">MP</AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="cursor-pointer">
+                  <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg"} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user?.user_metadata?.full_name || "Usuário"}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-muted-foreground">
+                  <Phone className="mr-2 h-4 w-4" />
+                  <span>{user?.phone || "(xx) xxxxx-xxxx"}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-muted-foreground">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <span>Cadastro: {formatJoinDate(user?.created_at)}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

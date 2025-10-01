@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "react-router-dom";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
@@ -9,40 +10,37 @@ import {
   TrendingUp
 } from "lucide-react";
 
-interface SidebarProps {
-  activeSection: string;
-  onSectionChange: (section: string) => void;
-}
-
 const menuItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "clients", label: "Alunos", icon: Users },
-  { id: "enrollment", label: "Matrículas", icon: UserPlus },
-  { id: "payments", label: "Contas a Receber", icon: CreditCard },
-  { id: "reports", label: "Relatórios", icon: TrendingUp },
+  { id: "dashboard", path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "clients", path: "/clients", label: "Alunos", icon: Users },
+  { id: "enrollment", path: "/enrollments", label: "Matrículas", icon: UserPlus },
+  { id: "payments", path: "/payments", label: "Contas a Receber", icon: CreditCard },
+  { id: "reports", path: "/reports", label: "Relatórios", icon: TrendingUp },
 ];
 
-export const Sidebar = ({ activeSection, onSectionChange }: SidebarProps) => {
+export const Sidebar = () => {
+  const location = useLocation();
+
   return (
     <aside className="w-64 bg-card border-r border-border shadow-card">
       <nav className="p-4 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeSection === item.id;
+          const isActive = location.pathname === item.path;
           
           return (
-            <Button
+            <Link
               key={item.id}
-              variant={isActive ? "default" : "ghost"}
+              to={item.path}
               className={cn(
+                buttonVariants({ variant: isActive ? "default" : "ghost" }),
                 "w-full justify-start gap-3 transition-smooth",
                 isActive && "gradient-primary text-primary-foreground shadow-primary"
               )}
-              onClick={() => onSectionChange(item.id)}
             >
               <Icon className="h-5 w-5" />
               {item.label}
-            </Button>
+            </Link>
           );
         })}
       </nav>

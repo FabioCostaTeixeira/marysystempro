@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format, addMonths } from 'date-fns';
 
 interface SupabaseContextType {
+  supabase: typeof supabase;
   clients: Client[];
   enrollments: Enrollment[];
   payments: MonthlyPayment[];
@@ -322,6 +323,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
   const uploadMedicalCertificate = async (file: File, clientId: number): Promise<string> => { /* ... */ };
 
   const value: SupabaseContextType = {
+    supabase,
     clients,
     enrollments,
     payments,

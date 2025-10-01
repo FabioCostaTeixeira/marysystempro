@@ -1,71 +1,108 @@
+import { BrowserRouter as Router, Routes, Route, Outlet, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SupabaseProvider } from "@/contexts/SupabaseContext";
+import { SupabaseProvider, useSupabaseData } from "@/contexts/SupabaseContext";
+
+// Layouts and Pages
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { LoginPage } from "@/pages/Login";
+import { UpdatePasswordPage } from "@/pages/UpdatePassword";
+import PortalPage from "@/pages/Portal";
+import NotFoundPage from "@/pages/NotFound";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+
+// Main Content Components
 import { Dashboard } from "@/components/Dashboard";
 import { ClientList } from "@/components/ClientList";
 import { EnrollmentList } from "@/components/EnrollmentList";
 import { PaymentManagement } from "@/components/PaymentManagement";
 import { Reports } from "@/pages/Reports";
 import { ClientProfile } from "@/pages/ClientProfile";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { ArrowUp } from "lucide-react";
 
 const queryClient = new QueryClient();
 
-const App = () => {
-  const [activeSection, setActiveSection] = useState("dashboard");
+// Main layout for authenticated users
+const MainLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
 
+  return (
+    <div className="min-h-screen bg-background">
+      <Header title="PersonalSystem Pro" onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
+      <div className="flex">
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
+        <main className="flex-1 p-6">
+          <Outlet />
+        </main>
+      </div>
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetContent side="left" className="p-0 w-64 bg-card border-r border-border shadow-card">
+          <Sidebar />
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+};
+
+const AppRoutes = () => {
+  const { supabase } = useSupabaseData();
+  const navigate = useNavigate();
+
+  // Efeito para lidar com a entrada inicial via link de e-mail (convite/recuperação)
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowBackToTop(true);
-      } else {
-        setShowBackToTop(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleSectionChange = (section: string) => {
-    setActiveSection(section);
-    setIsMobileMenuOpen(false);
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case "dashboard":
-        return <Dashboard />;
-      case "clients":
-        return <ClientList />;
-      case "enrollment":
-        return <EnrollmentList />;
-      case "payments":
-        return <PaymentManagement />;
-      case "reports":
-        return <Reports />;
-      default:
-        return <Dashboard />;
+    const hash = window.location.hash;
+    // Verificação imediata e síncrona na carga da página
+    if (hash.includes('type=invite') || hash.includes('type=recovery')) {
+      // Redireciona imediatamente para a página de senha, resolvendo a condição de corrida.
+      // O cliente Supabase irá lidar com o token no hash e criar a sessão que a página de destino espera.
+      navigate('/update-password', { replace: true });
     }
-  };
+  }, [navigate]); // Executa apenas uma vez na montagem inicial
 
+  // Efeito para lidar com mudanças de estado dinâmicas (ex: logout)
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, _session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/login', { replace: true });
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase, navigate]);
+
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/update-password" element={<UpdatePasswordPage />} />
+      
+      {/* Protected Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/clients" element={<ClientList />} />
+          <Route path="/client/:id" element={<ClientProfile />} />
+          <Route path="/enrollments" element={<EnrollmentList />} />
+          <Route path="/payments" element={<PaymentManagement />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/portal" element={<PortalPage />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}
+
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SupabaseProvider>
@@ -73,36 +110,7 @@ const App = () => {
           <Router>
             <Toaster />
             <Sonner />
-            <Routes>
-              <Route path="/client/:id" element={<ClientProfile />} />
-              <Route path="*" element={
-                <div className="min-h-screen bg-background">
-                  <Header title="PersonalSystem Pro" onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
-                  <div className="flex">
-                    <div className="hidden md:block">
-                      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-                    </div>
-                    <main className="flex-1 p-6">
-                      {renderContent()}
-                    </main>
-                  </div>
-                  <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                    <SheetContent side="left" className="p-0 w-64 bg-card border-r border-border shadow-card">
-                      <Sidebar activeSection={activeSection} onSectionChange={handleSectionChange} />
-                    </SheetContent>
-                  </Sheet>
-                </div>
-              } />
-            </Routes>
-            {showBackToTop && (
-              <Button
-                onClick={scrollToTop}
-                className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg gradient-primary text-primary-foreground z-50 transition-opacity duration-300"
-                size="icon"
-              >
-                <ArrowUp className="h-6 w-6" />
-              </Button>
-            )}
+            <AppRoutes />
           </Router>
         </TooltipProvider>
       </SupabaseProvider>
