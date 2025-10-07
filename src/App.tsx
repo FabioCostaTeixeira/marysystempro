@@ -12,9 +12,15 @@ import { Sidebar } from "@/components/Sidebar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { LoginPage } from "@/pages/Login";
 import { UpdatePasswordPage } from "@/pages/UpdatePassword";
-import PortalPage from "@/pages/Portal";
 import NotFoundPage from "@/pages/NotFound";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+
+// Portal Aluno
+import PortalLayout from "@/components/portal/PortalLayout";
+import PortalDashboard from "@/pages/portal/PortalDashboard";
+import MeusDadosPage from "@/pages/portal/MeusDadosPage";
+import FrequenciaPage from "@/pages/portal/FrequenciaPage";
+import MensalidadesPage from "@/pages/portal/MensalidadesPage";
 
 // Main Content Components
 import { Dashboard } from "@/components/Dashboard";
@@ -93,7 +99,14 @@ const AppRoutes = () => {
           <Route path="/enrollments" element={<EnrollmentList />} />
           <Route path="/payments" element={<PaymentManagement />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/portal" element={<PortalPage />} />
+        </Route>
+
+        {/* Portal do Aluno */}
+        <Route path="/portal" element={<PortalLayout />}>
+          <Route index element={<PortalDashboard />} />
+          <Route path="dados" element={<MeusDadosPage />} />
+          <Route path="frequencia" element={<FrequenciaPage />} />
+          <Route path="mensalidades" element={<MensalidadesPage />} />
         </Route>
       </Route>
 
