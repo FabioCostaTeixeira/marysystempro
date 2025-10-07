@@ -311,7 +311,23 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     await loadPayments();
   };
 
-  const upsertPresence = async (presenceData: Omit<Presence, 'id'>) => { /* ... */ };
+  const upsertPresence = async (presenceData: Omit<Presence, 'id'>) => {
+    try {
+      const { error } = await supabase
+        .from('presencas')
+        .upsert(presenceData, { onConflict: 'id_aluno, data_treino' });
+
+      if (error) {
+        throw error;
+      }
+      
+      await loadPresences(); // Recarrega as presenças
+      toast({ title: "Sucesso", description: "Frequência salva com sucesso!" });
+
+    } catch (error) {
+      toast({ title: "Erro", description: "Não foi possível salvar a frequência.", variant: "destructive" });
+    }
+  };
   const inviteClient = async (aluno_id: number, email: string) => { /* ... */ };
   const calculateAge = (birthDate: string): number => { /* ... */ };
   const getClientById = (id: number): Client | undefined => clients.find(c => c.id === id);
