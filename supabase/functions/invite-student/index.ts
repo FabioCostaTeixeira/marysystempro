@@ -18,15 +18,13 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
-      email: email,
-      email_confirm: true,
-    });
+    // Convida o usuário usando o e-mail fornecido. O Supabase cuidará do envio do e-mail de convite.
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
     if (userError) throw userError;
     
     const newUser = userData.user;
-    if (!newUser) throw new Error("Falha ao criar o usuário.");
+    if (!newUser) throw new Error("Falha ao convidar o usuário.");
 
     const { error: updateError } = await supabaseAdmin
       .from('alunos')

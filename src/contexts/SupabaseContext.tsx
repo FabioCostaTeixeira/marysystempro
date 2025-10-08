@@ -328,7 +328,23 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
       toast({ title: "Erro", description: "Não foi possível salvar a frequência.", variant: "destructive" });
     }
   };
-  const inviteClient = async (aluno_id: number, email: string) => { /* ... */ };
+  const inviteClient = async (aluno_id: number, email: string) => {
+    console.log('PASSO 3: Função inviteClient no contexto executada.');
+    try {
+      const { data, error } = await supabase.functions.invoke('invite-student', {
+        body: { aluno_id, email },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('ERRO AO CHAMAR A EDGE FUNCTION:', error);
+      throw error; // Re-throw the error to be caught by the calling function
+    }
+  };
   const calculateAge = (birthDate: string): number => { /* ... */ };
   const getClientById = (id: number): Client | undefined => clients.find(c => c.id === id);
   const getEnrollmentsByClientId = (clientId: number): Enrollment[] => enrollments.filter(e => e.id_aluno === clientId);

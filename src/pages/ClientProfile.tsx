@@ -83,9 +83,11 @@ export const ClientProfile = () => {
   };
 
   const handleInvite = async () => {
+    console.log('PASSO 1: Função de convite acionada.');
     if (!client) return;
     setIsInviting(true);
     try {
+      console.log('PASSO 2: Chamando a função do contexto para convidar.');
       await inviteClient(client.id, client.email);
       toast({
         title: "Sucesso!",
