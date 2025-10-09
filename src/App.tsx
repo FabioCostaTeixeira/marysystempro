@@ -60,17 +60,6 @@ const AppRoutes = () => {
   const { supabase } = useSupabaseData();
   const navigate = useNavigate();
 
-  // Efeito para lidar com a entrada inicial via link de e-mail (convite/recuperação)
-  useEffect(() => {
-    const hash = window.location.hash;
-    // Verificação imediata e síncrona na carga da página
-    if (hash.includes('type=invite') || hash.includes('type=recovery')) {
-      // Redireciona imediatamente para a página de senha, resolvendo a condição de corrida.
-      // O cliente Supabase irá lidar com o token no hash e criar a sessão que a página de destino espera.
-      navigate('/update-password', { replace: true });
-    }
-  }, [navigate]); // Executa apenas uma vez na montagem inicial
-
   // Efeito para lidar com mudanças de estado dinâmicas (ex: logout)
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, _session) => {
