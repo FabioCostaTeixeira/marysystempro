@@ -26,7 +26,7 @@ interface Client {
 interface ClientFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (client: Omit<Client, 'id'>) => void;
+  onSave: (client: Omit<Client, 'id'>) => Promise<any>;
 }
 
 export const ClientForm = ({ isOpen, onClose, onSave }: ClientFormProps) => {
@@ -86,11 +86,19 @@ export const ClientForm = ({ isOpen, onClose, onSave }: ClientFormProps) => {
       });
     } catch (error) {
       console.error('Erro ao chamar a API:', error);
-      toast({
-        title: "Erro no Cadastro",
-        description: "Houve um problema ao salvar o aluno. Verifique o console para mais detalhes.",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message === 'Email already exists') {
+        toast({
+          title: "Erro de Cadastro",
+          description: "Usuário já cadastrado com este email.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro no Cadastro",
+          description: "Houve um problema ao salvar o aluno. Verifique o console para mais detalhes.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

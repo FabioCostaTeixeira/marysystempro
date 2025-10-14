@@ -119,7 +119,11 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
               <DropdownMenuContent align="end" className="w-64">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.user_metadata?.full_name || "Usuário"}</p>
+                    <p className="text-sm font-medium leading-none">
+                      {user?.user_metadata?.full_name
+                        ? `Seja Bem Vindo, ${user.user_metadata.full_name.split(' ')[0]}`
+                        : "Usuário"}
+                    </p>
                     <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>

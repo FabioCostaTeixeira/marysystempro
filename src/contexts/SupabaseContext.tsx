@@ -167,7 +167,12 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
       })
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      if (error.code === '23505') {
+        throw new Error('Email already exists');
+      }
+      throw error;
+    }
     await loadClients();
     return data;
   };

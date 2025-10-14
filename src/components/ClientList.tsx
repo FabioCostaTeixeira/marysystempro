@@ -34,8 +34,8 @@ export const ClientList = () => {
     setIsFormOpen(true);
   };
 
-  const handleSaveNewClient = (newClientData) => {
-    addClient(newClientData);
+  const handleSaveNewClient = async (newClientData: Omit<Client, 'id'>) => {
+    await addClient(newClientData);
   };
 
   // Check if client needs medical certificate (age > 40 and no certificate)
