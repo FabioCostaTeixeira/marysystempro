@@ -133,6 +133,10 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
                   <span>Cadastro: {formatJoinDate(user?.created_at)}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/update-password')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Alterar Senha</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sair</span>

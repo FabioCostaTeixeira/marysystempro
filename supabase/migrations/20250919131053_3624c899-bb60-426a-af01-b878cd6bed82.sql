@@ -91,26 +91,3 @@ CREATE POLICY "Allow all operations on matriculas" ON public.matriculas
 
 CREATE POLICY "Allow all operations on mensalidades" ON public.mensalidades
     FOR ALL USING (true) WITH CHECK (true);
-
--- Criar bucket para storage de arquivos
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES (
-    'atestados-medicos',
-    'atestados-medicos',
-    true,
-    5242880, -- 5MB limit
-    ARRAY['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
-);
-
--- Políticas para o storage bucket
-CREATE POLICY "Allow public access to atestados bucket" ON storage.objects
-    FOR SELECT USING (bucket_id = 'atestados-medicos');
-
-CREATE POLICY "Allow authenticated users to upload atestados" ON storage.objects
-    FOR INSERT WITH CHECK (bucket_id = 'atestados-medicos');
-
-CREATE POLICY "Allow authenticated users to update atestados" ON storage.objects
-    FOR UPDATE USING (bucket_id = 'atestados-medicos');
-
-CREATE POLICY "Allow authenticated users to delete atestados" ON storage.objects
-    FOR DELETE USING (bucket_id = 'atestados-medicos');

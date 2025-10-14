@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,7 +7,16 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseData } from '@/contexts/SupabaseContext';
 import Logo from '@/assets/mary-personal-logo.jpg';
-import { LogIn } from 'lucide-react';
+import { LogIn, ShieldAlert } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export const LoginPage = () => {
   const { supabase } = useSupabaseData();
@@ -17,6 +25,7 @@ export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showFirstLoginModal, setShowFirstLoginModal] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -32,7 +41,7 @@ export const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -45,6 +54,8 @@ export const LoginPage = () => {
         description: error.message || 'Verifique suas credenciais e tente novamente.',
         variant: 'destructive',
       });
+    } else if (data.user?.user_metadata?.is_first_login) {
+      setShowFirstLoginModal(true);
     } else {
       toast({
         title: 'Login bem-sucedido!',
@@ -97,6 +108,25 @@ export const LoginPage = () => {
           </form>
         </CardContent>
       </Card>
+
+      <AlertDialog open={showFirstLoginModal} onOpenChange={setShowFirstLoginModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <ShieldAlert className="mr-2 text-yellow-500" />
+              Primeiro Acesso Detectado
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Para garantir a segurança da sua conta, você precisa definir uma nova senha.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => navigate('/update-password')}>
+              Definir Nova Senha
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

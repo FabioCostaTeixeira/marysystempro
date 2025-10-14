@@ -54,7 +54,11 @@ export const UpdatePasswordPage = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      // Atualiza a senha e o metadado is_first_login em uma única chamada
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+        data: { is_first_login: false },
+      });
       setLoading(false);
 
       if (error) {

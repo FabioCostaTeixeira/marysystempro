@@ -59,6 +59,12 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
   const { toast } = useToast();
 
   useEffect(() => {
+    if (import.meta.env.DEV) {
+      (window as any).supabase = supabase;
+    }
+  }, [supabase]);
+
+  useEffect(() => {
     loadAllData();
   }, []);
 
