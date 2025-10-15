@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import { Client, Enrollment, MonthlyPayment, Presence, DashboardMetrics, Notification } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { format, addMonths } from 'date-fns';
+import { format, addMonths, differenceInDays } from 'date-fns';
 
 interface SupabaseContextType {
   supabase: typeof supabase;
@@ -67,6 +67,44 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
   useEffect(() => {
     loadAllData();
   }, []);
+
+  // Gera notificações dinamicamente a partir dos dados carregados
+  useEffect(() => {
+    if (payments.length > 0 && enrollments.length > 0 && clients.length > 0) {
+      const today = new Date();
+      const overdueNotifications: Notification[] = [];
+
+      payments.forEach(payment => {
+        // Ignora pagamentos que não estão pendentes
+        if (payment.statusPagamento !== 'Pendente') {
+          return;
+        }
+
+        const dueDate = new Date(payment.dataVencimento);
+        const daysOverdue = differenceInDays(today, dueDate);
+
+        if (daysOverdue >= 5) {
+          const enrollment = enrollments.find(e => e.id === payment.id_matricula);
+          if (enrollment) {
+            const client = clients.find(c => c.id === enrollment.id_aluno);
+            if (client) {
+              overdueNotifications.push({
+                id: payment.id, // Usar o ID do pagamento como ID da notificação
+                type: 'overdue',
+                message: `A mensalidade de ${client.nome} venceu há ${daysOverdue} dias.`,
+                clientId: client.id,
+                enrollmentId: enrollment.id,
+                date: new Date().toISOString(),
+                read: false,
+              });
+            }
+          }
+        }
+      });
+
+      setNotifications(overdueNotifications);
+    }
+  }, [payments, enrollments, clients]);
 
   const loadAllData = async () => {
     try {

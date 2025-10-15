@@ -58,12 +58,8 @@ export const NotificationPanel = ({
       if (notification.type === 'medical_certificate') {
         navigate(`/client/${notification.clientId}?tab=dados`);
       } else if (notification.type === 'overdue') {
-        // Find the overdue payment to highlight it
-        const overduePayment = payments.find(p => 
-          p.statusPagamento === 'Atrasado' && 
-          enrollments.find(e => e.id === p.id_matricula && e.id_aluno === notification.clientId)
-        );
-        const highlightParam = overduePayment ? `&highlight_payment=${overduePayment.id}` : '';
+        // O ID da notificação é o mesmo do pagamento que a gerou.
+        const highlightParam = `&highlight_payment=${notification.id}`;
         navigate(`/client/${notification.clientId}?tab=financeiro${highlightParam}`);
       } else {
         navigate(`/client/${notification.clientId}`);
