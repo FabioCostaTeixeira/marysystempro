@@ -2,24 +2,25 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useSupabaseData } from "@/contexts/SupabaseContext";
 import { Presence } from "@/types";
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { FrequenciaModal } from '@/components/FrequenciaModal';
+import { Plus } from 'lucide-react';
 
 interface FrequenciaTabProps {
   clientId: number;
 }
 
 export const FrequenciaTab = ({ clientId }: FrequenciaTabProps) => {
-  const { presences, upsertPresence, getClientById } = useSupabaseData();
+  const { presences, getClientById } = useSupabaseData();
   const [month, setMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [observation, setObservation] = useState("");
+  const [selectedPresence, setSelectedPresence] = useState<Presence | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isObservationModalOpen, setIsObservationModalOpen] = useState(false);
   const [selectedObservation, setSelectedObservation] = useState<string | null>(null);
 
@@ -66,27 +67,15 @@ export const FrequenciaTab = ({ clientId }: FrequenciaTabProps) => {
 
   const handleDayClick = (day: Date) => {
     const existingPresence = clientPresences.find(p => format(parseISO(p.data_treino), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'));
-    setObservation(existingPresence?.observacao || '');
+    setSelectedPresence(existingPresence || null);
     setSelectedDate(day);
     setIsModalOpen(true);
   };
 
-  const handleSavePresence = async (status: 'Presente' | 'Ausente') => {
-    if (!selectedDate) return;
-    const presenceData: Omit<Presence, 'id'> = {
-      id_aluno: clientId,
-      data_treino: format(selectedDate, 'yyyy-MM-dd'),
-      status,
-      observacao: observation,
-    };
-    try {
-      await upsertPresence(presenceData);
-    } catch (error) {
-      console.error("Falha ao salvar frequência:", error);
-    }
-    setIsModalOpen(false);
-    setObservation('');
-    setSelectedDate(undefined);
+  const handleAddFrequencyClick = () => {
+    setSelectedPresence(null);
+    setSelectedDate(new Date());
+    setIsModalOpen(true);
   };
 
   const handleRowClick = (observationText: string) => {
@@ -96,8 +85,12 @@ export const FrequenciaTab = ({ clientId }: FrequenciaTabProps) => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Controle de Frequência</CardTitle>
+        <Button onClick={handleAddFrequencyClick}>
+          <Plus className="mr-2 h-4 w-4" />
+          Adicionar Frequência
+        </Button>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="p-4 border rounded-lg">
@@ -184,24 +177,15 @@ export const FrequenciaTab = ({ clientId }: FrequenciaTabProps) => {
         </div>
       </CardContent>
 
-      {/* Modal para registrar frequência */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{`Registrar Frequência de ${client?.nome || 'Aluno'} - ${selectedDate ? format(selectedDate, 'dd/MM/yyyy') : ''}`}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div>
-              <label htmlFor="observation" className="text-sm font-medium">Observações</label>
-              <Textarea id="observation" placeholder="Adicione uma observação sobre o treino..." value={observation} onChange={(e) => setObservation(e.target.value)} className="mt-2" />
-            </div>
-          </div>
-          <DialogFooter className="grid grid-cols-2 gap-4">
-            <Button onClick={() => handleSavePresence('Presente')} className="bg-success hover:bg-success/90 text-success-foreground">Presente</Button>
-            <Button onClick={() => handleSavePresence('Ausente')} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Ausente</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {isModalOpen && (
+        <FrequenciaModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          clientId={clientId}
+          presence={selectedPresence}
+          date={selectedDate}
+        />
+      )}
 
       {/* Modal para exibir observação */}
       <Dialog open={isObservationModalOpen} onOpenChange={setIsObservationModalOpen}>

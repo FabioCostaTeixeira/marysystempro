@@ -39,6 +39,7 @@ export interface MonthlyPayment {
 export interface Presence {
   id?: number;
   id_aluno: number;
+  id_matricula?: number;
   data_treino: string; // ISO date string
   status: 'Presente' | 'Ausente';
   observacao?: string;

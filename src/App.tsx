@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Outlet, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -35,6 +35,12 @@ const queryClient = new QueryClient();
 // Main layout for authenticated users
 const MainLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { refresh } = useSupabaseData();
+  const location = useLocation();
+
+  useEffect(() => {
+    refresh();
+  }, [location]);
 
   return (
     <div className="min-h-screen bg-background">

@@ -75,7 +75,7 @@ export const ClientProfile = () => {
         title: "Cliente Excluído",
         description: "O cliente foi removido do sistema.",
       });
-      navigate('/alunos'); // Navigate back to the client list
+      navigate('/clients'); // Navigate back to the client list
     } catch (error) {
       // The error toast is already handled in the context
       console.error("Falha ao excluir cliente:", error);
