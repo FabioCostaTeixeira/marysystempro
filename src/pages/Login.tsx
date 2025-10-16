@@ -56,12 +56,18 @@ export const LoginPage = () => {
       });
     } else if (data.user?.user_metadata?.is_first_login) {
       setShowFirstLoginModal(true);
-    } else {
+    } else if (data.user) {
       toast({
         title: 'Login bem-sucedido!',
-        description: 'Redirecionando para o portal...',
+        description: 'Redirecionando...',
       });
-      navigate('/'); // Redirect to dashboard on successful login
+      
+      const ADMIN_USER_ID = 'bfd00b65-1c6d-45c9-89bb-0a469dec7126';
+      if (data.user.id === ADMIN_USER_ID) {
+        navigate('/'); // Admin vai para o dashboard principal
+      } else {
+        navigate('/portal_aluno'); // Outros usuários vão para o portal do aluno
+      }
     }
   };
 

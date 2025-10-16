@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { differenceInDays } from "date-fns";
+import { User as SupabaseUser } from "@supabase/supabase-js";
+import { Notification } from "@/types";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -63,14 +66,34 @@ const MainLayout = () => {
 };
 
 const AppRoutes = () => {
-  const { supabase } = useSupabaseData();
+  const { 
+    supabase, 
+    clients, 
+    enrollments, 
+    payments, 
+    setNotifications 
+  } = useSupabaseData();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
 
-  // Efeito para lidar com mudanças de estado dinâmicas (ex: logout)
+  // Busca o usuário autenticado
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, _session) => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, [supabase]);
+
+  // Lida com o logout e atualiza o usuário no estado
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         navigate('/login', { replace: true });
+      }
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        setUser(session?.user ?? null);
       }
     });
 
@@ -78,6 +101,69 @@ const AppRoutes = () => {
       authListener.subscription.unsubscribe();
     };
   }, [supabase, navigate]);
+
+  // Gera notificações de forma sensível ao contexto da rota
+  useEffect(() => {
+    if (!payments.length || !enrollments.length || !clients.length) {
+      setNotifications([]); // Limpa as notificações se os dados não estiverem carregados
+      return;
+    }
+
+    const today = new Date();
+    let overdueNotifications: Notification[] = [];
+
+    const allOverduePayments = payments.filter(p => 
+      p.statusPagamento === 'Pendente' && differenceInDays(today, new Date(p.dataVencimento)) >= 5
+    );
+
+    if (location.pathname.startsWith('/portal_aluno')) {
+      // Contexto do Aluno: filtra notificações para o usuário logado
+      if (user) {
+        const currentUserClient = clients.find(c => c.user_id === user.id);
+        if (currentUserClient) {
+          const clientEnrollments = enrollments.filter(e => e.id_aluno === currentUserClient.id);
+          const clientEnrollmentIds = clientEnrollments.map(e => e.id);
+          
+          const clientOverduePayments = allOverduePayments.filter(p => 
+            clientEnrollmentIds.includes(p.id_matricula)
+          );
+
+          overdueNotifications = clientOverduePayments.map(payment => {
+            const daysOverdue = differenceInDays(today, new Date(payment.dataVencimento));
+            return {
+              id: payment.id,
+              type: 'overdue',
+              message: `Sua mensalidade venceu há ${daysOverdue} dias.`,
+              clientId: currentUserClient.id,
+              enrollmentId: payment.id_matricula,
+              date: new Date().toISOString(),
+              read: false,
+            };
+          });
+        }
+      }
+    } else {
+      // Contexto do Admin: mostra todas as notificações
+      overdueNotifications = allOverduePayments.map(payment => {
+        const enrollment = enrollments.find(e => e.id === payment.id_matricula);
+        const client = enrollment ? clients.find(c => c.id === enrollment.id_aluno) : undefined;
+        const daysOverdue = differenceInDays(today, new Date(payment.dataVencimento));
+        
+        return {
+          id: payment.id,
+          type: 'overdue',
+          message: `A mensalidade de ${client?.nome || 'Aluno desconhecido'} venceu há ${daysOverdue} dias.`,
+          clientId: client?.id,
+          enrollmentId: payment.id_matricula,
+          date: new Date().toISOString(),
+          read: false,
+        };
+      });
+    }
+
+    setNotifications(overdueNotifications);
+
+  }, [location, user, payments, enrollments, clients, setNotifications]);
 
   return (
     <Routes>
@@ -97,7 +183,7 @@ const AppRoutes = () => {
         </Route>
 
         {/* Portal do Aluno */}
-        <Route path="/portal" element={<PortalLayout />}>
+        <Route path="/portal_aluno" element={<PortalLayout />}>
           <Route index element={<PortalDashboard />} />
           <Route path="dados" element={<MeusDadosPage />} />
           <Route path="frequencia" element={<FrequenciaPage />} />

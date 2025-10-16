@@ -11,6 +11,7 @@ interface SupabaseContextType {
   payments: MonthlyPayment[];
   presences: Presence[];
   notifications: Notification[];
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   loading: boolean;
   error: string | null;
   addClient: (clientData: Omit<Client, 'id'>) => Promise<any>;
@@ -68,43 +69,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     loadAllData();
   }, []);
 
-  // Gera notificações dinamicamente a partir dos dados carregados
-  useEffect(() => {
-    if (payments.length > 0 && enrollments.length > 0 && clients.length > 0) {
-      const today = new Date();
-      const overdueNotifications: Notification[] = [];
-
-      payments.forEach(payment => {
-        // Ignora pagamentos que não estão pendentes
-        if (payment.statusPagamento !== 'Pendente') {
-          return;
-        }
-
-        const dueDate = new Date(payment.dataVencimento);
-        const daysOverdue = differenceInDays(today, dueDate);
-
-        if (daysOverdue >= 5) {
-          const enrollment = enrollments.find(e => e.id === payment.id_matricula);
-          if (enrollment) {
-            const client = clients.find(c => c.id === enrollment.id_aluno);
-            if (client) {
-              overdueNotifications.push({
-                id: payment.id, // Usar o ID do pagamento como ID da notificação
-                type: 'overdue',
-                message: `A mensalidade de ${client.nome} venceu há ${daysOverdue} dias.`,
-                clientId: client.id,
-                enrollmentId: enrollment.id,
-                date: new Date().toISOString(),
-                read: false,
-              });
-            }
-          }
-        }
-      });
-
-      setNotifications(overdueNotifications);
-    }
-  }, [payments, enrollments, clients]);
+  // A lógica de geração de notificações foi movida para App.tsx para ser sensível ao contexto da rota
 
   const loadAllData = async () => {
     try {
@@ -410,6 +375,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     payments,
     presences,
     notifications,
+    setNotifications,
     loading,
     error,
     addClient,

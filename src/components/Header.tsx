@@ -25,8 +25,9 @@ interface HeaderProps {
 
 export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const { supabase, notifications, markAllNotificationsAsRead, deleteSelectedNotifications } = useSupabaseData();
+  const { supabase, notifications, clients, markAllNotificationsAsRead, deleteSelectedNotifications } = useSupabaseData();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [welcomeName, setWelcomeName] = useState("Usuário");
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -36,6 +37,15 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
     };
     fetchUser();
   }, [supabase]);
+
+  useEffect(() => {
+    if (user && clients.length > 0) {
+      const client = clients.find(c => c.user_id === user.id);
+      if (client && client.nome) {
+        setWelcomeName(`Seja Bem Vindo, ${client.nome.split(' ')[0]}`);
+      }
+    }
+  }, [user, clients]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -120,9 +130,7 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {user?.user_metadata?.full_name
-                        ? `Seja Bem Vindo, ${user.user_metadata.full_name.split(' ')[0]}`
-                        : "Usuário"}
+                      {welcomeName}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                   </div>
