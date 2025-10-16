@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -15,10 +15,16 @@ import { HistoricoFinanceiroTab } from "@/components/ClientProfile/HistoricoFina
 import { FrequenciaTab } from "@/components/ClientProfile/FrequenciaTab";
 import { format } from 'date-fns';
 
-export const ClientProfile = () => {
-  const { id } = useParams();
+interface ClientProfileProps {
+  clientId?: number;
+}
+
+export const ClientProfile = ({ clientId }: ClientProfileProps) => {
+  const { id: idFromUrl } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+  const isPortalView = location.pathname.startsWith('/portal_aluno');
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'dados');
   const { toast } = useToast();
   
@@ -31,10 +37,12 @@ export const ClientProfile = () => {
   const [isInviting, setIsInviting] = useState(false);
   const [highlightedPaymentId, setHighlightedPaymentId] = useState<number | null>(null);
 
+  const effectiveId = clientId ?? (idFromUrl ? parseInt(idFromUrl, 10) : undefined);
+
   // Load data when component mounts and when data is available
   useEffect(() => {
-    if (id && clients.length > 0 && !loading) {
-      const foundClient = clients.find(c => c.id === parseInt(id));
+    if (effectiveId && clients.length > 0 && !loading) {
+      const foundClient = clients.find(c => c.id === effectiveId);
       if (foundClient) {
         setClient(foundClient);
         
@@ -61,7 +69,7 @@ export const ClientProfile = () => {
         setClient(null);
       }
     }
-  }, [id, clients, enrollments, payments, loading, searchParams]); // Depend on all necessary data
+  }, [effectiveId, clients, enrollments, payments, loading, searchParams]); // Depend on all necessary data
 
   const handleClientUpdate = (updatedClient: Client) => {
     updateClient(updatedClient.id, updatedClient);
@@ -226,7 +234,7 @@ export const ClientProfile = () => {
             <p className="text-muted-foreground mb-6">
               O cliente solicitado não existe ou foi removido do sistema.
             </p>
-            <Button onClick={() => window.history.back()}>
+                        <Button onClick={() => window.history.back()}>
               Voltar
             </Button>
           </div>
@@ -260,7 +268,7 @@ export const ClientProfile = () => {
             <DadosCadastraisTab
               client={client}
               onUpdate={handleClientUpdate}
-              onDelete={handleClientDelete}
+              onDelete={!isPortalView ? handleClientDelete : undefined}
               needsMedicalCertificate={needsMedicalCertificate}
             />
           </TabsContent>

@@ -14,7 +14,7 @@ import { Client } from "@/types";
 interface DadosCadastraisTabProps {
   client: Client;
   onUpdate: (client: Client) => void;
-  onDelete: (clientId: number) => void;
+  onDelete?: (clientId: number) => void;
   needsMedicalCertificate: boolean;
 }
 
@@ -49,6 +49,7 @@ export const DadosCadastraisTab = memo(({
   };
 
   const handleDelete = () => {
+    if (!onDelete) return;
     onDelete(client.id);
     toast({
       title: "Aluno excluído",
@@ -293,35 +294,37 @@ export const DadosCadastraisTab = memo(({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between pt-4 border-t">
-          <div>
-            {!isEditing && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Excluir Aluno
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                    <AlertDialogDescription className="text-left">
-                      Você tem certeza que deseja excluir este aluno? 
-                      <br /><br />
-                      <strong>Esta ação é irreversível</strong> e todos os dados, incluindo matrículas e histórico de pagamentos, serão permanentemente apagados.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Confirmar Exclusão
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
+        <div className={`flex ${onDelete ? 'justify-between' : 'justify-center'} pt-4 border-t`}>
+          {onDelete && (
+            <div>
+              {!isEditing && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir Aluno
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                      <AlertDialogDescription className="text-left">
+                        Você tem certeza que deseja excluir este aluno? 
+                        <br /><br />
+                        <strong>Esta ação é irreversível</strong> e todos os dados, incluindo matrículas e histórico de pagamentos, serão permanentemente apagados.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Confirmar Exclusão
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-2">
             {isEditing ? (

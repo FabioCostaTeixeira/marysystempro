@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +24,8 @@ export const ClientProfileHeader = memo(({
   isInviting
 }: ClientProfileHeaderProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isPortalView = location.pathname.startsWith('/portal_aluno');
 
   const activeEnrollment = useMemo(() => {
     return enrollments
@@ -35,14 +37,16 @@ export const ClientProfileHeader = memo(({
     <>
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/clients')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar
-        </Button>
+        {!isPortalView && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/clients')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+        )}
         <div>
           <h1 className="text-3xl font-bold">Perfil do Aluno</h1>
           <p className="text-muted-foreground">Informações completas de {client.nome}</p>
