@@ -12,20 +12,24 @@ const MeusDadosPage = () => {
 
   useEffect(() => {
     const fetchAndSetClient = async () => {
-      setIsLoading(true);
+      // Ensure we have clients before proceeding
+      if (clients.length === 0) {
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
 
-      if (user && clients.length > 0) {
+      if (user) {
         const foundClient = clients.find(c => c.user_id === user.id);
         if (foundClient) {
           setFoundClientId(foundClient.id);
         }
       }
-      // Set loading to false even if client not found, to stop spinner
+      // Stop loading only after attempting to find the client
       setIsLoading(false);
     };
 
-    // Only run if the main context is not loading and clients are available
+    // Run when context is done loading and clients are populated
     if (!contextLoading) {
       fetchAndSetClient();
     }
