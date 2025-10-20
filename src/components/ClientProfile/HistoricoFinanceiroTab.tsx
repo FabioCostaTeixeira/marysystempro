@@ -9,12 +9,14 @@ interface HistoricoFinanceiroTabProps {
   clientPayments: MonthlyPayment[];
   onMarkAsPaid: (paymentId: number) => void;
   highlightedPaymentId?: number | null;
+  isPortalView?: boolean;
 }
 
-export const HistoricoFinanceiroTab = memo(({ 
+const HistoricoFinanceiroTab = memo(({ 
   clientPayments, 
   onMarkAsPaid,
-  highlightedPaymentId 
+  highlightedPaymentId,
+  isPortalView
 }: HistoricoFinanceiroTabProps) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -79,7 +81,7 @@ export const HistoricoFinanceiroTab = memo(({
                       </p>
                     </div>
                   </div>
-                  {(payment.statusPagamento === 'Pendente' || payment.statusPagamento === 'Atrasado') && (
+                  {!isPortalView && (payment.statusPagamento === 'Pendente' || payment.statusPagamento === 'Atrasado') && (
                     <Button
                       size="sm"
                       className="ml-4 gradient-primary text-primary-foreground"
@@ -106,3 +108,5 @@ export const HistoricoFinanceiroTab = memo(({
 });
 
 HistoricoFinanceiroTab.displayName = "HistoricoFinanceiroTab";
+
+export default HistoricoFinanceiroTab;

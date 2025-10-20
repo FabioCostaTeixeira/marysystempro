@@ -11,7 +11,7 @@ import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { ClientProfileHeader } from "@/components/ClientProfile/ClientProfileHeader";
 import { DadosCadastraisTab } from "@/components/ClientProfile/DadosCadastraisTab";
 import { MatriculasTab } from "@/components/ClientProfile/MatriculasTab";
-import { HistoricoFinanceiroTab } from "@/components/ClientProfile/HistoricoFinanceiroTab";
+import HistoricoFinanceiroTab from "@/components/ClientProfile/HistoricoFinanceiroTab";
 import { FrequenciaTab } from "@/components/ClientProfile/FrequenciaTab";
 import { format } from 'date-fns';
 
@@ -291,6 +291,7 @@ export const ClientProfile = ({ clientId }: ClientProfileProps) => {
               clientPayments={clientPayments}
               onMarkAsPaid={handlePaymentMarkAsPaid}
               highlightedPaymentId={highlightedPaymentId}
+              isPortalView={isPortalView}
             />
           </TabsContent>
 
