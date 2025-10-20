@@ -17,6 +17,7 @@ interface EnrollmentModalProps {
   onClose: () => void;
   onUpdate: (updatedEnrollment: Enrollment) => void;
   onDelete: (enrollmentId: number) => void;
+  isPortalView?: boolean;
 }
 
 export const EnrollmentModal = ({
@@ -25,7 +26,8 @@ export const EnrollmentModal = ({
   isOpen,
   onClose,
   onUpdate,
-  onDelete
+  onDelete,
+  isPortalView
 }: EnrollmentModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Enrollment>>({});
@@ -116,7 +118,7 @@ export const EnrollmentModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Data de Início</Label>
-              {isEditing ? (
+              {isEditing && !isPortalView ? (
                 <Input
                   type="date"
                   value={formData.dataInicio || enrollment.dataInicio}
@@ -140,7 +142,7 @@ export const EnrollmentModal = ({
 
             <div className="space-y-2">
               <Label>Tipo de Treino</Label>
-              {isEditing ? (
+              {isEditing && !isPortalView ? (
                 <Select
                   value={formData.tipoTreino || enrollment.tipoTreino}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, tipoTreino: value as "Online" | "Presencial" }))}
@@ -166,7 +168,7 @@ export const EnrollmentModal = ({
 
             <div className="space-y-2">
               <Label>Frequência Semanal</Label>
-              {isEditing ? (
+              {isEditing && !isPortalView ? (
                 <Select
                   value={String(formData.frequenciaSemanal || enrollment.frequenciaSemanal)}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, frequenciaSemanal: Number(value) }))}
@@ -192,7 +194,7 @@ export const EnrollmentModal = ({
 
             <div className="space-y-2">
               <Label>Duração (meses)</Label>
-              {isEditing ? (
+              {isEditing && !isPortalView ? (
                 <Input
                   type="number"
                   min="1"
@@ -209,7 +211,7 @@ export const EnrollmentModal = ({
 
             <div className="space-y-2">
               <Label>Valor da Mensalidade</Label>
-              {isEditing ? (
+              {isEditing && !isPortalView ? (
                 <Input
                   type="number"
                   step="0.01"
@@ -227,7 +229,7 @@ export const EnrollmentModal = ({
 
             <div className="space-y-2 md:col-span-2">
               <Label>Recorrência de Pagamento</Label>
-              {isEditing ? (
+              {isEditing && !isPortalView ? (
                 <Select
                   value={formData.recorrenciaPagamento || enrollment.recorrenciaPagamento}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, recorrenciaPagamento: value as "Mensal" | "Trimestral" | "Semestral" }))}
@@ -251,7 +253,7 @@ export const EnrollmentModal = ({
           </div>
 
           {/* Observação de Alteração - apenas no modo de edição */}
-          {isEditing && (
+          {isEditing && !isPortalView && (
             <div className="space-y-2">
               <Label>Observação da Alteração *</Label>
               <Textarea
@@ -274,51 +276,53 @@ export const EnrollmentModal = ({
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex gap-2 pt-4 border-t">
-          {isEditing ? (
-            <>
-              <Button onClick={handleSave} className="flex-1">
-                <Save className="h-4 w-4 mr-2" />
-                Salvar Alterações
-              </Button>
-              <Button variant="outline" onClick={handleCancel}>
-                <X className="h-4 w-4 mr-2" />
-                Cancelar
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button onClick={handleEdit} className="flex-1">
-                <Edit className="h-4 w-4 mr-2" />
-                Editar Dados
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Excluir
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Você tem certeza que deseja excluir esta matrícula? Esta ação é irreversível 
-                      e todas as mensalidades associadas também serão excluídas.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-                      Confirmar Exclusão
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
-          )}
-        </div>
+        {/* Footer Actions - Hide if portal view */}
+        {!isPortalView && (
+          <div className="flex gap-2 pt-4 border-t">
+            {isEditing ? (
+              <>
+                <Button onClick={handleSave} className="flex-1">
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Alterações
+                </Button>
+                <Button variant="outline" onClick={handleCancel}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={handleEdit} className="flex-1">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar Dados
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Você tem certeza que deseja excluir esta matrícula? Esta ação é irreversível 
+                        e todas as mensalidades associadas também serão excluídas.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                        Confirmar Exclusão
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

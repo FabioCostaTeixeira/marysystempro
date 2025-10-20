@@ -12,6 +12,7 @@ interface MatriculasTabProps {
   onEnrollmentUpdate: (enrollment: Enrollment) => void;
   onEnrollmentDelete: (enrollmentId: number) => void;
   onNewEnrollment: () => void;
+  isPortalView?: boolean; // Add this prop
 }
 
 export const MatriculasTab = memo(({ 
@@ -19,7 +20,8 @@ export const MatriculasTab = memo(({
   clientEnrollments,
   onEnrollmentUpdate,
   onEnrollmentDelete,
-  onNewEnrollment
+  onNewEnrollment,
+  isPortalView // Destructure the prop
 }: MatriculasTabProps) => {
   const [selectedEnrollment, setSelectedEnrollment] = useState<Enrollment | null>(null);
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
@@ -55,7 +57,7 @@ export const MatriculasTab = memo(({
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Matrícula(s)</CardTitle>
-            {clientEnrollments.length === 0 && (
+            {!isPortalView && clientEnrollments.length === 0 && (
               <Button 
                 onClick={onNewEnrollment}
                 className="gradient-primary text-primary-foreground"
@@ -100,31 +102,34 @@ export const MatriculasTab = memo(({
                     </div>
                   </CardContent>
                 </Card>
-              ))
-              }
-              <div className="pt-4 border-t">
-                <Button 
-                  onClick={onNewEnrollment}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Adicionar Nova Matrícula
-                </Button>
-              </div>
+              ))}
+              {!isPortalView && (
+                <div className="pt-4 border-t">
+                  <Button 
+                    onClick={onNewEnrollment}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Adicionar Nova Matrícula
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-8">
               <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhuma matrícula encontrada</h3>
               <p className="text-muted-foreground mb-4">Este aluno ainda não possui matrículas cadastradas.</p>
-              <Button 
-                onClick={onNewEnrollment}
-                className="gradient-primary text-primary-foreground"
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Criar Primeira Matrícula
-              </Button>
+              {!isPortalView && (
+                <Button 
+                  onClick={onNewEnrollment}
+                  className="gradient-primary text-primary-foreground"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Criar Primeira Matrícula
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
@@ -145,6 +150,7 @@ export const MatriculasTab = memo(({
             setSelectedEnrollment(updatedEnrollment);
           }}
           onDelete={onEnrollmentDelete}
+          isPortalView={isPortalView}
         />
       )}
     </>

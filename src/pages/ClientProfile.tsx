@@ -281,6 +281,7 @@ export const ClientProfile = ({ clientId }: ClientProfileProps) => {
               onEnrollmentUpdate={handleEnrollmentUpdate}
               onEnrollmentDelete={handleEnrollmentDelete}
               onNewEnrollment={handleNewEnrollment}
+              isPortalView={isPortalView} // Passa a variável para o componente filho
             />
           </TabsContent>
 
