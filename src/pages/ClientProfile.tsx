@@ -297,7 +297,7 @@ export const ClientProfile = ({ clientId }: ClientProfileProps) => {
 
           {/* Tab 4: Frequência */}
           <TabsContent value="frequencia">
-            <FrequenciaTab clientId={client.id} />
+            <FrequenciaTab clientId={client.id} isPortalView={isPortalView} />
           </TabsContent>
         </Tabs>
 

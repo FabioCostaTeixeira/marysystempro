@@ -13,9 +13,10 @@ import { Plus } from 'lucide-react';
 
 interface FrequenciaTabProps {
   clientId: number;
+  isPortalView?: boolean;
 }
 
-export const FrequenciaTab = ({ clientId }: FrequenciaTabProps) => {
+export const FrequenciaTab = ({ clientId, isPortalView }: FrequenciaTabProps) => {
   const { presences, getClientById } = useSupabaseData();
   const [month, setMonth] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -87,10 +88,12 @@ export const FrequenciaTab = ({ clientId }: FrequenciaTabProps) => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Controle de Frequência</CardTitle>
-        <Button onClick={handleAddFrequencyClick}>
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Frequência
-        </Button>
+        {!isPortalView && (
+          <Button onClick={handleAddFrequencyClick}>
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Frequência
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="p-4 border rounded-lg">
